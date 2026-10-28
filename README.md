@@ -2,7 +2,8 @@
 
 A 3D traffic-rule training game you drive with your body: lean to change lanes, raise a hand to stop at red lights.
 
-- **Live demo:** <VERCEL_LINK>
+- **Live demo:** https://gesturekart-beta.vercel.app/
+- **Repository:** https://github.com/Aneeq914/gesturekart
 - **Demo video:** <LINK>
 
 ## About
