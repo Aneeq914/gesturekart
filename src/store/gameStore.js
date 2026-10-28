@@ -47,7 +47,7 @@ export const useGameStore = create((set, get) => ({
   ...freshRound(),
 
   // Current control input, written by the webcam or the keyboard.
-  input: { action: 'none', source: 'camera' }, // action: 'left' | 'right' | 'stop' | 'none'
+  input: { action: 'none', source: 'keyboard' }, // keyboard until the camera is on. action: 'left' | 'right' | 'stop' | 'none'
 
   // Webcam / pose-model status, shown on the start screen and in the HUD.
   camera: { status: 'idle', message: '' }, // status: 'idle' | 'loading' | 'ready' | 'no-body' | 'denied' | 'error'
