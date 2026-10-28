@@ -1,0 +1,391 @@
+/* Results screen. The score card is built like a printed document: solid
+   background, no glass, no shadows that matter, so the PNG/PDF export looks
+   the same as the screen. */
+.gameover {
+  background:
+    radial-gradient(80% 50% at 50% 0%, color-mix(in srgb, var(--bg-2) 70%, transparent), transparent 70%),
+    color-mix(in srgb, var(--bg) 88%, transparent);
+}
+
+.gameover__inner {
+  display: grid;
+  gap: var(--s-5);
+  width: 100%;
+  max-width: 680px;
+  margin: auto;
+  padding-block: var(--s-4);
+}
+
+.gameover__head {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-1);
+  text-align: center;
+}
+
+.gameover__title {
+  font-size: var(--fs-xl);
+  letter-spacing: -0.02em;
+}
+
+.gameover__title:focus,
+.gameover__title:focus-visible {
+  /* Focus is moved here by code (tabIndex -1, not tabbable), so a ring would
+     only look like a stray border around the heading. */
+  outline: none;
+}
+
+/* ── Score card ────────────────────────────────────────────────────────── */
+.scorecard {
+  display: grid;
+  gap: var(--s-5);
+  padding: var(--s-6);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--panel-solid);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+@media (max-width: 480px) {
+  .scorecard {
+    gap: var(--s-4);
+    padding: var(--s-5) var(--s-4);
+  }
+}
+
+.scorecard__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.scorecard__head > svg {
+  flex: none;
+}
+
+.scorecard__heading {
+  display: grid;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.scorecard__title {
+  font-size: var(--fs-lg);
+  letter-spacing: -0.01em;
+}
+
+.scorecard__date {
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Score + grade, separated from the rest by a ticket-style dashed rule */
+.scorecard__hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-5);
+  padding-block: var(--s-5);
+  border-block: 1px dashed var(--line);
+}
+
+.scorecard__score {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.scorecard__score-value {
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: var(--fs-hero);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+.scorecard__net {
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+
+.scorecard__net[data-tone='good'] {
+  color: var(--green);
+}
+
+.scorecard__net[data-tone='bad'] {
+  color: var(--red);
+}
+
+.scorecard__grade {
+  --tone: var(--text-dim);
+
+  display: grid;
+  justify-items: center;
+  gap: var(--s-2);
+  text-align: center;
+}
+
+.scorecard__grade[data-grade='green'] {
+  --tone: var(--green);
+}
+.scorecard__grade[data-grade='blue'] {
+  --tone: var(--blue);
+}
+.scorecard__grade[data-grade='amber'] {
+  --tone: var(--amber);
+}
+.scorecard__grade[data-grade='red'] {
+  --tone: var(--red);
+}
+
+.scorecard__badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border: 3px solid var(--tone);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--tone) 14%, var(--panel-solid));
+  color: var(--tone);
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.scorecard__grade-title {
+  max-width: 14ch;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+@media (max-width: 400px) {
+  .scorecard__hero {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .scorecard__score {
+    justify-items: center;
+  }
+}
+
+/* Stats grid: 2×2 on phones, 4 across when there is room */
+.scorecard__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-2);
+  margin: 0;
+}
+
+@media (min-width: 600px) {
+  .scorecard__stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.scorecard__stat {
+  --tone: var(--text-dim);
+
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: var(--s-1);
+  padding: var(--s-3);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+}
+
+.scorecard__stat[data-tone='good'] {
+  --tone: var(--green);
+}
+
+.scorecard__stat[data-tone='bad'] {
+  --tone: var(--red);
+}
+
+.scorecard__stat dt {
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.scorecard__stat dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1) var(--s-2);
+  margin: 0;
+}
+
+.scorecard__stat-value {
+  color: var(--tone);
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.scorecard__stat-each {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+/* Event log */
+.scorecard__log {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.scorecard__log-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.scorecard__h3 {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.scorecard__log-count {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+
+.log {
+  max-height: 232px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--panel-border);
+}
+
+.log:focus-visible {
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.log__row {
+  --tone: var(--text-dim);
+
+  display: grid;
+  grid-template-columns: 4.5em minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-1);
+  border-bottom: 1px solid var(--panel-border);
+  font-size: var(--fs-sm);
+}
+
+.log__row[data-tone='good'] {
+  --tone: var(--green);
+}
+
+.log__row[data-tone='bad'] {
+  --tone: var(--red);
+}
+
+.log__time {
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.log__label {
+  font-weight: 500;
+}
+
+.log__points {
+  color: var(--tone);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.log__empty {
+  padding: var(--s-4);
+  border: 1px dashed color-mix(in srgb, var(--green) 45%, transparent);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--green) 8%, transparent);
+  color: var(--green);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Export: print the whole log, not just the scroll box */
+.scorecard--exporting .log {
+  max-height: none;
+  overflow: visible;
+}
+
+.scorecard--exporting {
+  box-shadow: none;
+  /* Fixed export width so a phone-sized card doesn't print as a thin strip on A4. */
+  width: 640px;
+  max-width: none;
+}
+
+.scorecard__foot {
+  padding-top: var(--s-4);
+  border-top: 1px dashed var(--line);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ── Actions + error ───────────────────────────────────────────────────── */
+.gameover__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+}
+
+@media (max-width: 480px) {
+  .gameover__actions > :first-child {
+    flex: 1 1 100%;
+  }
+
+  .gameover__actions > :first-child .btn {
+    width: 100%;
+  }
+
+  .gameover__actions > :not(:first-child) {
+    flex: 1 1 0;
+  }
+
+  .gameover__actions > :not(:first-child) .btn {
+    width: 100%;
+  }
+}
+
+.gameover__error {
+  display: flex;
+  justify-content: center;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid color-mix(in srgb, var(--red) 45%, transparent);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--red) 12%, var(--panel-solid));
+  color: var(--text);
+  font-size: var(--fs-sm);
+  text-align: center;
+}

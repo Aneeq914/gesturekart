@@ -1,0 +1,332 @@
+/* Start screen: brand, how to play, camera, scoring.
+   Mobile: one column (brand → how → camera + CTA → scoring).
+   Desktop: content on the left, camera + CTA in a sticky right column. */
+.start {
+  background:
+    radial-gradient(90% 60% at 20% 0%, color-mix(in srgb, var(--bg-2) 70%, transparent), transparent 70%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg) 62%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 86%, transparent) 55%,
+      color-mix(in srgb, var(--bg) 94%, transparent) 100%
+    );
+}
+
+.start__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'brand'
+    'how'
+    'side'
+    'scoring';
+  gap: var(--s-4);
+  width: 100%;
+  max-width: 1120px;
+  margin: auto;
+  padding-block: var(--s-4);
+}
+
+.start__brand {
+  grid-area: brand;
+}
+.start__how {
+  grid-area: how;
+}
+.start__side {
+  grid-area: side;
+}
+.start__scoring {
+  grid-area: scoring;
+}
+
+@media (min-width: 900px) {
+  .start__inner {
+    grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      'brand side'
+      'how side'
+      'scoring side';
+    column-gap: var(--s-6);
+    row-gap: var(--s-5);
+  }
+
+  .start__side {
+    position: sticky;
+    top: var(--s-4);
+    align-self: start;
+  }
+}
+
+/* ── Brand ─────────────────────────────────────────────────────────────── */
+.start__brand {
+  display: grid;
+  gap: var(--s-3);
+  padding-block: var(--s-2) var(--s-3);
+}
+
+.start__brand-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.start__title {
+  font-size: var(--fs-hero);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+.start__tagline {
+  max-width: 34ch;
+  color: var(--text-dim);
+  font-size: var(--fs-lg);
+  line-height: 1.4;
+}
+
+/* ── Shared panel heading ──────────────────────────────────────────────── */
+.start__h2 {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.start__how,
+.start__scoring,
+.cam {
+  padding: var(--s-5);
+}
+
+@media (max-width: 380px) {
+  .start__how,
+  .start__scoring,
+  .cam {
+    padding: var(--s-4);
+  }
+}
+
+/* ── How to play ───────────────────────────────────────────────────────── */
+.how {
+  display: grid;
+  margin-top: var(--s-3);
+}
+
+.how__item {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-4);
+  padding-block: var(--s-3);
+}
+
+.how__item + .how__item {
+  border-top: 1px solid var(--panel-border);
+}
+
+.how__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  color: var(--blue);
+}
+
+.how__icon--stop {
+  background: color-mix(in srgb, var(--amber) 14%, transparent);
+  color: var(--amber);
+}
+
+.how__icon--keys {
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+  color: var(--text-dim);
+}
+
+.how__title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.how__text {
+  margin-top: 2px;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+.how__keys {
+  display: grid;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+
+.how__keys > span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+/* ── Scoring ───────────────────────────────────────────────────────────── */
+.start__rules-note {
+  margin-top: var(--s-1);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+.start__rules-note strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.rules {
+  display: grid;
+  gap: var(--s-1);
+  margin-top: var(--s-3);
+}
+
+@media (min-width: 560px) and (max-width: 899px) {
+  .rules {
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--s-3);
+  }
+}
+
+.rule {
+  --tone: var(--text-dim);
+
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 44px;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  cursor: help;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.rule[data-tone='good'] {
+  --tone: var(--green);
+}
+
+.rule[data-tone='bad'] {
+  --tone: var(--red);
+}
+
+.rule:hover,
+.rule:focus-visible {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.rule__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 60%, transparent);
+}
+
+.rule__label {
+  min-width: 0;
+  font-weight: 500;
+}
+
+.rule__info {
+  flex: none;
+  color: var(--text-faint);
+}
+
+.rule__points {
+  margin-left: auto;
+  color: var(--tone);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Camera + CTA ──────────────────────────────────────────────────────── */
+.start__side {
+  display: grid;
+  gap: var(--s-4);
+}
+
+.cam {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.cam__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.cam__preview {
+  width: 100%;
+  min-width: 0;
+}
+
+.cam__status {
+  --tone: var(--text-faint);
+
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+.cam__status[data-status='loading'] {
+  --tone: var(--blue);
+}
+.cam__status[data-status='ready'] {
+  --tone: var(--green);
+  color: var(--text);
+}
+.cam__status[data-status='no-body'] {
+  --tone: var(--amber);
+}
+.cam__status[data-status='denied'],
+.cam__status[data-status='error'] {
+  --tone: var(--red);
+  color: var(--text);
+}
+
+.cam__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 0.45em;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 18%, transparent);
+}
+
+.cam__status[data-status='loading'] .cam__dot {
+  animation: cam-pulse 1.1s var(--ease-out) infinite;
+}
+
+@keyframes cam-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.cam__hint {
+  padding: var(--s-2) var(--s-3);
+  border-left: 3px solid var(--green);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--green) 9%, transparent);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+.cam__hint strong {
+  color: var(--text);
+}

@@ -1,0 +1,356 @@
+/* In-game HUD. The whole layer is click-through; only the pills opt in.
+   Everything hugs the top edge or the bottom corners, so the middle of the
+   road (where the car, lights and obstacles are) stays clear. */
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hud .tt,
+.hud__camera {
+  pointer-events: auto;
+}
+
+/* ── Top bar ───────────────────────────────────────────────────────────── */
+.hud__top {
+  position: absolute;
+  top: calc(var(--s-3) + var(--safe-t));
+  left: calc(var(--gutter) + var(--safe-l));
+  right: calc(var(--gutter) + var(--safe-r));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.hud__stats {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--s-2);
+  max-width: 100%;
+}
+
+.stat {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 2px;
+  min-width: 104px;
+  min-height: 56px;
+  height: 100%;
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  background: var(--panel);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow);
+  transition: border-color var(--dur) var(--ease-out);
+}
+
+.stat__label {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.stat__value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-1);
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.stat__unit {
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.stat--score {
+  min-width: 128px;
+  cursor: help;
+}
+
+.stat--score .stat__value {
+  color: var(--accent);
+  font-size: calc(var(--fs-xl) * 1.2);
+  animation: hud-pop var(--dur) var(--ease-out);
+}
+
+@keyframes hud-pop {
+  from {
+    transform: scale(1.18);
+  }
+}
+
+.stat--time[data-low] {
+  border-color: color-mix(in srgb, var(--red) 55%, transparent);
+}
+
+.stat--time[data-low] .stat__value {
+  color: var(--red);
+  animation: hud-tick 1s steps(1) infinite;
+}
+
+@keyframes hud-tick {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* One compact row on phones */
+@media (max-width: 560px) {
+  .hud__stats {
+    width: 100%;
+    gap: var(--s-1);
+  }
+
+  .hud__stats > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .stat,
+  .stat--score {
+    min-width: 0;
+    min-height: 48px;
+    width: 100%;
+    padding: var(--s-1) var(--s-3);
+  }
+
+  .stat__label {
+    font-size: 0.625rem;
+  }
+
+  .stat__value {
+    font-size: var(--fs-lg);
+  }
+
+  .stat--score .stat__value {
+    font-size: calc(var(--fs-lg) * 1.2);
+  }
+}
+
+/* ── Event toast ───────────────────────────────────────────────────────── */
+.hud__toasts {
+  display: flex;
+  justify-content: center;
+  min-height: 0;
+}
+
+.toast {
+  --tone: var(--text-dim);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: 100%;
+  padding: var(--s-2) var(--s-4) var(--s-2) var(--s-2);
+  border: 1px solid color-mix(in srgb, var(--tone) 50%, transparent);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--tone) 16%, var(--panel-solid));
+  box-shadow:
+    var(--shadow),
+    0 0 32px color-mix(in srgb, var(--tone) 22%, transparent);
+  animation: hud-toast-in var(--dur) var(--ease-out) both;
+}
+
+.toast[data-tone='good'] {
+  --tone: var(--green);
+}
+
+.toast[data-tone='bad'] {
+  --tone: var(--red);
+}
+
+.toast[data-stage='out'] {
+  animation: hud-toast-out 260ms var(--ease-out) both;
+}
+
+.toast__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--tone);
+  color: var(--bg);
+}
+
+.toast__points {
+  color: var(--tone);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.toast__label {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes hud-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.94);
+  }
+}
+
+@keyframes hud-toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+}
+
+/* ── Control indicator (bottom-left) ───────────────────────────────────── */
+.hud__control {
+  position: absolute;
+  left: calc(var(--gutter) + var(--safe-l));
+  bottom: calc(var(--gutter) + var(--safe-b));
+}
+
+.control {
+  --tone: var(--text-dim);
+
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 52px;
+  padding: var(--s-1) var(--s-4) var(--s-1) var(--s-1);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-pill);
+  background: var(--panel);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow);
+  cursor: help;
+}
+
+.control[data-tone='move'] {
+  --tone: var(--blue);
+}
+
+.control[data-tone='stop'] {
+  --tone: var(--amber);
+}
+
+.control__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tone) 18%, transparent);
+  color: var(--tone);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.control__text {
+  display: grid;
+  line-height: 1.2;
+}
+
+.control__label {
+  font-weight: 700;
+}
+
+.control__source {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+}
+
+@media (max-width: 560px) {
+  .control {
+    gap: var(--s-2);
+    min-height: 48px;
+    padding-right: var(--s-3);
+  }
+
+  .control__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .control__label {
+    font-size: var(--fs-sm);
+  }
+}
+
+@media (max-width: 360px) {
+  .control__text {
+    display: none;
+  }
+
+  .control {
+    padding-right: var(--s-1);
+  }
+}
+
+/* ── Camera thumbnail (bottom-right) ───────────────────────────────────── */
+.hud__camera {
+  position: absolute;
+  right: calc(var(--gutter) + var(--safe-r));
+  bottom: calc(var(--gutter) + var(--safe-b));
+}
+
+/* ── Controls legend (desktop only, bottom-centre) ─────────────────────── */
+.hud__legend {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--s-4) + var(--safe-b));
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-1) var(--s-4);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  translate: -50% 0;
+}
+
+.hud__legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.hud__legend-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--line);
+}
+
+@media (max-width: 960px), (pointer: coarse) {
+  .hud__legend {
+    display: none;
+  }
+}
