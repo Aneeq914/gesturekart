@@ -1,17 +1,22 @@
-/* Results screen. The score card is built like a printed document: solid
-   background, no glass, no shadows that matter, so the PNG/PDF export looks
-   the same as the screen. */
+/* Game-over "Driver Report". The frozen night road stays visible behind a
+   dark scrim; the report card itself is SOLID (dark gradient on an opaque
+   base) so the JPEG/PDF export looks the same as the screen. Layout reacts
+   to the card's own width (container queries), so the fixed 640px export
+   width always gets the same single-column layout, whatever the screen. */
+
 .gameover {
   background:
-    radial-gradient(80% 50% at 50% 0%, color-mix(in srgb, var(--bg-2) 70%, transparent), transparent 70%),
-    color-mix(in srgb, var(--bg) 88%, transparent);
+    radial-gradient(70% 45% at 50% 0%, color-mix(in srgb, var(--glow-cool, #5ee7ff) 9%, transparent), transparent 70%),
+    radial-gradient(120% 90% at 50% 50%, transparent 30%, color-mix(in srgb, var(--bg) 80%, transparent) 100%),
+    color-mix(in srgb, var(--bg) 66%, transparent);
 }
 
 .gameover__inner {
   display: grid;
   gap: var(--s-5);
   width: 100%;
-  max-width: 680px;
+  min-width: 0;
+  max-width: 880px;
   margin: auto;
   padding-block: var(--s-4);
 }
@@ -19,13 +24,31 @@
 .gameover__head {
   display: grid;
   justify-items: center;
-  gap: var(--s-1);
+  gap: var(--s-2);
   text-align: center;
+  animation: go-rise 520ms var(--ease-out) both;
+}
+
+.gameover__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--glow-cool, #5ee7ff);
+}
+
+.gameover__eyebrow::before,
+.gameover__eyebrow::after {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
 }
 
 .gameover__title {
-  font-size: var(--fs-xl);
-  letter-spacing: -0.02em;
+  font-size: clamp(2rem, 1.3rem + 3vw, 3.25rem);
+  letter-spacing: -0.03em;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
 .gameover__title:focus,
@@ -35,31 +58,86 @@
   outline: none;
 }
 
-/* ── Score card ────────────────────────────────────────────────────────── */
+/* ── Report card ───────────────────────────────────────────────────────── */
 .scorecard {
-  display: grid;
-  gap: var(--s-5);
-  padding: var(--s-6);
-  border: 1px solid var(--line);
+  /* Keep --card-bg equal to CARD_BG in GameOver.jsx (export background). */
+  --card-bg: #10173a;
+
+  container-type: inline-size;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--r-lg);
-  background: var(--panel-solid);
-  box-shadow: var(--shadow);
+  /* Solid: the gradients sit on an opaque base colour. */
+  background:
+    radial-gradient(90% 60% at 0% 0%, rgba(94, 231, 255, 0.08), transparent 60%),
+    radial-gradient(70% 50% at 100% 0%, rgba(255, 197, 49, 0.05), transparent 60%),
+    linear-gradient(180deg, #161f48 0%, var(--card-bg) 45%, #0d1331 100%),
+    var(--card-bg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 30px 80px -20px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(0, 0, 0, 0.25);
   color: var(--text);
   font-family: var(--font-body);
+  animation: go-rise 640ms var(--ease-out) 80ms both;
 }
 
-@media (max-width: 480px) {
-  .scorecard {
+/* Thin cool highlight along the top edge, like light on glass */
+.scorecard::before {
+  content: '';
+  position: absolute;
+  inset: 0 12% auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(94, 231, 255, 0.55), transparent);
+  pointer-events: none;
+}
+
+.scorecard__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'head'
+    'hero'
+    'stats'
+    'timeline'
+    'log'
+    'foot';
+  gap: var(--s-5);
+  padding: var(--s-6);
+}
+
+@container (max-width: 480px) {
+  .scorecard__body {
     gap: var(--s-4);
     padding: var(--s-5) var(--s-4);
   }
 }
 
+/* Wide card: hero and stats side by side */
+@container (min-width: 760px) {
+  .scorecard__body {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'head head'
+      'hero stats'
+      'timeline timeline'
+      'log log'
+      'foot foot';
+    column-gap: var(--s-5);
+  }
+}
+
+/* ── Header ── */
 .scorecard__head {
+  grid-area: head;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--s-3);
+  padding-bottom: var(--s-4);
+  border-bottom: 1px solid var(--panel-border);
 }
 
 .scorecard__head > svg {
@@ -68,6 +146,7 @@
 
 .scorecard__heading {
   display: grid;
+  gap: 2px;
   flex: 1 1 12rem;
   min-width: 0;
 }
@@ -78,42 +157,119 @@
 }
 
 .scorecard__date {
+  padding: 4px var(--s-3);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-dim);
-  font-size: var(--fs-sm);
+  font-family: var(--font-num, var(--font-body));
+  font-size: var(--fs-xs);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* Score + grade, separated from the rest by a ticket-style dashed rule */
+/* ── Hero: grade ring + score ── */
 .scorecard__hero {
+  --tone: var(--text-dim);
+
+  grid-area: hero;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: var(--s-5);
-  padding-block: var(--s-5);
-  border-block: 1px dashed var(--line);
+  min-width: 0;
+  padding: var(--s-5);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  background:
+    radial-gradient(80% 120% at 0% 50%, color-mix(in srgb, var(--tone) 12%, transparent), transparent 70%),
+    rgba(255, 255, 255, 0.02);
+}
+
+.scorecard__hero[data-grade='green'] {
+  --tone: var(--green);
+}
+.scorecard__hero[data-grade='cyan'] {
+  --tone: var(--glow-cool, #5ee7ff);
+}
+.scorecard__hero[data-grade='amber'] {
+  --tone: var(--amber);
+}
+.scorecard__hero[data-grade='red'] {
+  --tone: var(--red);
+}
+
+.ring {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 132px;
+  aspect-ratio: 1;
+}
+
+.ring__glow {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--tone) 22%, transparent), transparent 70%);
+  box-shadow: 0 0 40px 4px color-mix(in srgb, var(--tone) 28%, transparent);
+}
+
+.ring__svg {
+  position: absolute;
+  inset: 0;
+}
+
+.ring__letter {
+  position: relative;
+  color: var(--tone);
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-shadow: 0 0 24px color-mix(in srgb, var(--tone) 55%, transparent);
 }
 
 .scorecard__score {
   display: grid;
   gap: var(--s-1);
+  min-width: 0;
 }
 
 .scorecard__score-value {
-  color: var(--accent);
-  font-family: var(--font-display);
-  font-size: var(--fs-hero);
+  color: var(--text);
+  font-family: var(--font-num, var(--font-display));
+  font-size: clamp(3rem, 2rem + 4vw, 4.5rem);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
-  line-height: 0.9;
+  line-height: 0.95;
+  text-shadow: 0 0 32px rgba(255, 255, 255, 0.12);
+}
+
+.scorecard__grade-title {
+  color: var(--tone);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.scorecard__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-3);
+  margin-top: var(--s-1);
+  font-size: var(--fs-sm);
 }
 
 .scorecard__net {
   color: var(--text-dim);
-  font-size: var(--fs-sm);
-  font-weight: 500;
+  font-family: var(--font-num, var(--font-body));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .scorecard__net[data-tone='good'] {
@@ -124,174 +280,350 @@
   color: var(--red);
 }
 
-.scorecard__grade {
-  --tone: var(--text-dim);
-
-  display: grid;
-  justify-items: center;
-  gap: var(--s-2);
-  text-align: center;
+.scorecard__next {
+  color: var(--text-faint);
+  font-weight: 500;
 }
 
-.scorecard__grade[data-grade='green'] {
-  --tone: var(--green);
-}
-.scorecard__grade[data-grade='blue'] {
-  --tone: var(--blue);
-}
-.scorecard__grade[data-grade='amber'] {
-  --tone: var(--amber);
-}
-.scorecard__grade[data-grade='red'] {
-  --tone: var(--red);
-}
-
-.scorecard__badge {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 88px;
-  height: 88px;
-  border: 3px solid var(--tone);
-  border-radius: var(--r-lg);
-  background: color-mix(in srgb, var(--tone) 14%, var(--panel-solid));
-  color: var(--tone);
-  font-family: var(--font-display);
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.scorecard__grade-title {
-  max-width: 14ch;
-  font-family: var(--font-display);
-  font-size: var(--fs-md);
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-@media (max-width: 400px) {
+@container (max-width: 420px) {
   .scorecard__hero {
-    justify-content: center;
+    gap: var(--s-4);
+    padding: var(--s-4);
+  }
+
+  .ring {
+    width: 104px;
+  }
+
+  .ring__letter {
+    font-size: 2.75rem;
+  }
+
+  .scorecard__score-value {
+    font-size: 3rem;
+  }
+
+  .scorecard__grade-title {
+    font-size: var(--fs-md);
+  }
+}
+
+/* Very narrow (320px phones): stack ring above the score */
+@container (max-width: 300px) {
+  .scorecard__hero {
+    flex-direction: column;
     text-align: center;
   }
 
   .scorecard__score {
     justify-items: center;
   }
+
+  .scorecard__meta {
+    justify-content: center;
+  }
+
+  .scorecard__heading .eyebrow {
+    letter-spacing: 0.08em;
+  }
+
+  /* Icon above the label so labels don't wrap to three lines */
+  .scorecard__stats .stat-tile dt {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .log .log__row {
+    gap: var(--s-2);
+    padding-inline: var(--s-2);
+  }
 }
 
-/* Stats grid: 2×2 on phones, 4 across when there is room */
+/* ── Stat tiles ── */
 .scorecard__stats {
+  grid-area: stats;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-2);
   margin: 0;
 }
 
-@media (min-width: 600px) {
+@container (min-width: 560px) and (max-width: 759px) {
   .scorecard__stats {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-.scorecard__stat {
+.stat-tile {
   --tone: var(--text-dim);
 
-  display: flex;
-  flex-direction: column-reverse;
-  justify-content: flex-end;
-  gap: var(--s-1);
+  display: grid;
+  align-content: space-between;
+  gap: var(--s-3);
+  min-width: 0;
   padding: var(--s-3);
   border: 1px solid var(--panel-border);
   border-radius: var(--r-md);
-  background: var(--bg-2);
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--tone) 9%, transparent), transparent 60%),
+    rgba(255, 255, 255, 0.025);
 }
 
-.scorecard__stat[data-tone='good'] {
+.stat-tile[data-tone='good'] {
   --tone: var(--green);
 }
 
-.scorecard__stat[data-tone='bad'] {
+.stat-tile[data-tone='bad'] {
   --tone: var(--red);
 }
 
-.scorecard__stat dt {
+.stat-tile dt {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.stat-tile__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 22%, transparent);
+}
+
+.stat-tile__label {
+  min-width: 0;
   color: var(--text-dim);
   font-size: var(--fs-xs);
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
-.scorecard__stat dd {
+.stat-tile dd {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
   gap: var(--s-1) var(--s-2);
   margin: 0;
 }
 
-.scorecard__stat-value {
+.stat-tile__value {
   color: var(--tone);
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
+  font-family: var(--font-num, var(--font-display));
+  font-size: 2rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--tone) 50%, transparent);
 }
 
-.scorecard__stat-each {
+.stat-tile[data-zero] .stat-tile__value {
   color: var(--text-faint);
+  text-shadow: none;
+}
+
+.stat-tile__each {
+  color: var(--text-faint);
+  font-family: var(--font-num, var(--font-body));
   font-size: var(--fs-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* Event log */
-.scorecard__log {
-  display: grid;
-  gap: var(--s-2);
-}
-
-.scorecard__log-head {
+/* ── Shared section heading ── */
+.scorecard__section-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--s-3);
+  gap: var(--s-2) var(--s-3);
 }
 
 .scorecard__h3 {
-  font-size: var(--fs-md);
-  font-weight: 600;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
-.scorecard__log-count {
+.scorecard__count {
   color: var(--text-faint);
   font-size: var(--fs-xs);
   font-weight: 700;
 }
 
+/* ── Drive timeline (plain HTML, positioned by % of GAME_DURATION) ── */
+.timeline {
+  grid-area: timeline;
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.timeline__legend {
+  display: inline-flex;
+  gap: var(--s-3);
+}
+
+.timeline__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.timeline__key::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.timeline__key[data-tone='bad']::before {
+  background: var(--red);
+}
+
+/* Inline padding keeps dots at 0 s / 75 s inside the card */
+.timeline__frame {
+  padding: var(--s-3) var(--s-3) 0;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.timeline__track {
+  position: relative;
+  height: 56px;
+}
+
+/* The centre line looks like a dashed lane marking */
+.timeline__road {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  margin-top: -1px;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0 10px, transparent 10px 18px);
+}
+
+.timeline__grid {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.timeline__marks {
+  position: absolute;
+  inset: 0;
+}
+
+/* Rewards ride above the lane line, penalties below it */
+.timeline__mark {
+  --tone: var(--text-dim);
+
+  position: absolute;
+  top: 25%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow:
+    0 0 0 2px var(--card-bg),
+    0 0 12px 1px color-mix(in srgb, var(--tone) 70%, transparent);
+  animation: go-pop 360ms var(--ease-out) both;
+  animation-delay: 420ms;
+}
+
+.timeline__mark[data-tone='good'] {
+  --tone: var(--green);
+}
+
+.timeline__mark[data-tone='bad'] {
+  --tone: var(--red);
+
+  top: 75%;
+}
+
+.timeline__ticks {
+  position: relative;
+  height: 28px;
+}
+
+.timeline__tick {
+  position: absolute;
+  top: 6px;
+  transform: translateX(-50%);
+  color: var(--text-faint);
+  font-family: var(--font-num, var(--font-body));
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timeline__tick[data-edge='start'] {
+  transform: none;
+}
+
+.timeline__tick[data-edge='end'] {
+  transform: translateX(-100%);
+}
+
+/* ── Event log ── */
+.scorecard__log {
+  grid-area: log;
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
 .log {
-  max-height: 232px;
+  display: grid;
+  gap: 2px;
+  max-height: 248px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  border-top: 1px solid var(--panel-border);
+  padding: var(--s-1);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, 0.18);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 .log:focus-visible {
   outline-offset: 2px;
-  border-radius: var(--r-sm);
 }
 
 .log__row {
   --tone: var(--text-dim);
 
   display: grid;
-  grid-template-columns: 4.5em minmax(0, 1fr) auto;
-  align-items: baseline;
+  grid-template-columns: 3.6em minmax(0, 1fr) auto;
+  align-items: center;
   gap: var(--s-3);
-  padding: var(--s-2) var(--s-1);
-  border-bottom: 1px solid var(--panel-border);
+  padding: var(--s-2) var(--s-3);
+  border-radius: 10px;
   font-size: var(--fs-sm);
+}
+
+.log__row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .log__row[data-tone='good'] {
@@ -304,52 +636,99 @@
 
 .log__time {
   color: var(--text-faint);
+  font-family: var(--font-num, var(--font-body));
+  font-size: var(--fs-xs);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .log__label {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
   font-weight: 500;
 }
 
+.log__label::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 8px var(--tone);
+}
+
 .log__points {
+  min-width: 3.4em;
+  padding: 2px var(--s-2);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
   color: var(--tone);
-  font-family: var(--font-display);
+  font-family: var(--font-num, var(--font-display));
+  font-size: var(--fs-xs);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .log__empty {
   padding: var(--s-4);
-  border: 1px dashed color-mix(in srgb, var(--green) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
   border-radius: var(--r-md);
   background: color-mix(in srgb, var(--green) 8%, transparent);
   color: var(--green);
   font-weight: 700;
   text-align: center;
+  text-shadow: 0 0 16px color-mix(in srgb, var(--green) 40%, transparent);
 }
 
-/* Export: print the whole log, not just the scroll box */
+.scorecard__foot {
+  grid-area: foot;
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--panel-border);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ── Export mode (html-to-image): fixed width, solid, full log, no motion ── */
+.scorecard--exporting {
+  width: 640px;
+  max-width: none;
+  background:
+    radial-gradient(90% 60% at 0% 0%, rgba(94, 231, 255, 0.08), transparent 60%),
+    linear-gradient(180deg, #161f48 0%, var(--card-bg) 45%, #0d1331 100%),
+    var(--card-bg);
+  box-shadow: none;
+}
+
+.scorecard--exporting,
+.scorecard--exporting *,
+.scorecard--exporting *::before,
+.scorecard--exporting *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
 .scorecard--exporting .log {
   max-height: none;
   overflow: visible;
 }
 
-.scorecard--exporting {
-  box-shadow: none;
-  /* Fixed export width so a phone-sized card doesn't print as a thin strip on A4. */
-  width: 640px;
-  max-width: none;
+/* A long log prints in two columns so the A4 page is not mostly log */
+.scorecard--exporting .log[data-long] {
+  display: block;
+  columns: 2;
+  column-gap: var(--s-3);
 }
 
-.scorecard__foot {
-  padding-top: var(--s-4);
-  border-top: 1px dashed var(--line);
-  color: var(--text-faint);
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-align: center;
-  text-transform: uppercase;
+.scorecard--exporting .log[data-long] .log__row {
+  break-inside: avoid;
 }
 
 /* ── Actions + error ───────────────────────────────────────────────────── */
@@ -358,6 +737,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--s-3);
+  animation: go-rise 520ms var(--ease-out) 200ms both;
 }
 
 @media (max-width: 480px) {
@@ -365,16 +745,13 @@
     flex: 1 1 100%;
   }
 
-  .gameover__actions > :first-child .btn {
+  .gameover__actions > * .btn {
     width: 100%;
   }
 
   .gameover__actions > :not(:first-child) {
     flex: 1 1 0;
-  }
-
-  .gameover__actions > :not(:first-child) .btn {
-    width: 100%;
+    min-width: 0;
   }
 }
 
@@ -388,4 +765,28 @@
   color: var(--text);
   font-size: var(--fs-sm);
   text-align: center;
+}
+
+/* ── Motion ────────────────────────────────────────────────────────────── */
+@keyframes go-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes go-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gameover__head,
+  .scorecard,
+  .gameover__actions,
+  .timeline__mark {
+    animation: none;
+  }
 }

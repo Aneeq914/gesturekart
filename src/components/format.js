@@ -12,3 +12,8 @@ export const formatClock = (seconds) => {
   const s = Math.max(0, Math.ceil(seconds))
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
+
+// 12.3 -> '12.3s' (event times are stored to 0.1 s)
+export const formatEventTime = (t) => `${t.toFixed(1)}s`
+
+export const clamp = (v, min, max) => Math.min(Math.max(v, min), max)

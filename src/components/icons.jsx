@@ -35,11 +35,19 @@ export function LogoMark({ size = 44, className = '' }) {
       {/* Colours are also set as attributes (same hex as tokens.css): the
           html-to-image export doesn't apply class styles to SVG children, so
           without them the lamps print black on the PDF score card. */}
-      <rect className="logo-mark__tile" x="1" y="1" width="46" height="46" rx="13" fill="#111832" />
-      <rect className="logo-mark__housing" x="15" y="5.5" width="18" height="37" rx="9" fill="#0b1020" />
-      <circle className="logo-mark__lamp logo-mark__lamp--red" cx="24" cy="14.5" r="4.4" fill="#ff4d5e" />
-      <circle className="logo-mark__lamp logo-mark__lamp--amber" cx="24" cy="24" r="4.4" fill="#ffc531" />
-      <circle className="logo-mark__lamp logo-mark__lamp--green" cx="24" cy="33.5" r="4.4" fill="#2ee6a0" />
+      <rect className="logo-mark__tile" x="1" y="1" width="46" height="46" rx="13" fill="#0f1630" />
+      <rect className="logo-mark__housing" x="15" y="5.5" width="18" height="37" rx="9" fill="#04060e" />
+      {/* Soft halo behind each lamp: the "lit at night" glow. */}
+      <circle className="logo-mark__halo logo-mark__lamp--red" cx="24" cy="14.5" r="6.8" fill="#ff4d5e" fillOpacity="0.2" />
+      <circle className="logo-mark__halo logo-mark__lamp--amber" cx="24" cy="24" r="6.8" fill="#ffc531" fillOpacity="0.2" />
+      <circle className="logo-mark__halo logo-mark__lamp--green" cx="24" cy="33.5" r="6.8" fill="#2ee6a0" fillOpacity="0.2" />
+      <circle className="logo-mark__lamp logo-mark__lamp--red" cx="24" cy="14.5" r="4.2" fill="#ff4d5e" />
+      <circle className="logo-mark__lamp logo-mark__lamp--amber" cx="24" cy="24" r="4.2" fill="#ffc531" />
+      <circle className="logo-mark__lamp logo-mark__lamp--green" cx="24" cy="33.5" r="4.2" fill="#2ee6a0" />
+      {/* Specular glint on each lens. */}
+      <circle cx="22.6" cy="13.1" r="1.2" fill="#ffffff" fillOpacity="0.55" />
+      <circle cx="22.6" cy="22.6" r="1.2" fill="#ffffff" fillOpacity="0.55" />
+      <circle cx="22.6" cy="32.1" r="1.2" fill="#ffffff" fillOpacity="0.55" />
     </svg>
   )
 }

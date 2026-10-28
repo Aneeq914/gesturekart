@@ -1,6 +1,7 @@
 /* Global styles: reset, the two stacked layers (3D scene + UI) and the shared
    UI primitives (.btn, .panel, .chip, .kbd, .eyebrow, .sr-only, .logo-mark).
-   Colours, type, spacing and motion come from tokens.css only. */
+   Colours, type, spacing and motion come from tokens.css only.
+   Look: "Night Drive" glass — see the header of tokens.css. */
 
 /* ── Reset ─────────────────────────────────────────────────────────────── */
 *,
@@ -53,8 +54,9 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
@@ -71,6 +73,11 @@ ol {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--text);
 }
 
 /* ── Layers ────────────────────────────────────────────────────────────── */
@@ -123,14 +130,16 @@ ol {
 }
 
 /* ── Primitives ────────────────────────────────────────────────────────── */
+/* Glass panel: translucent navy over the road, a sheen that fades down from
+   a 1px top highlight, and a soft long shadow so it floats above the scene. */
 .panel {
   position: relative;
-  background: var(--panel);
+  background: var(--glass-sheen), var(--panel);
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
   border: 1px solid var(--panel-border);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
+  box-shadow: var(--edge-hi), var(--shadow-lg);
 }
 
 /* An open tooltip lifts its panel above neighbouring panels, so the bubble
@@ -140,6 +149,8 @@ ol {
 }
 
 .btn {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -147,12 +158,13 @@ ol {
   min-height: 44px;
   padding: var(--s-2) var(--s-5);
   border: 1px solid transparent;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-md);
   background: transparent;
   font-family: var(--font-body);
   font-size: var(--fs-md);
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: 0.005em;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
@@ -164,6 +176,7 @@ ol {
     border-color var(--dur-fast) var(--ease-out),
     color var(--dur-fast) var(--ease-out),
     box-shadow var(--dur) var(--ease-out),
+    filter var(--dur) var(--ease-out),
     transform var(--dur-fast) var(--ease-out);
 }
 
@@ -180,35 +193,74 @@ ol {
   flex: none;
 }
 
+/* Primary: lit amber gradient (like a road sign under headlights) with a
+   bright top lip, a darker bottom lip and an amber glow that grows on hover.
+   A diagonal shine sweeps across on hover (removed under reduced motion). */
 .btn--primary {
-  background: var(--accent);
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--accent-hi) 70%, transparent);
+  background: var(--grad-accent);
   color: var(--accent-ink);
-  box-shadow: 0 8px 28px color-mix(in srgb, var(--accent) 28%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -2px 0 rgba(120, 60, 0, 0.28),
+    0 12px 32px -10px color-mix(in srgb, var(--accent) 70%, transparent),
+    0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.btn--primary::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.6) 48%, transparent 66%);
+  translate: -120% 0;
+  pointer-events: none;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 88%, var(--text));
-  box-shadow: 0 10px 36px color-mix(in srgb, var(--accent) 40%, transparent);
+  filter: brightness(1.05) saturate(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -2px 0 rgba(120, 60, 0, 0.28),
+    0 16px 44px -10px color-mix(in srgb, var(--accent) 85%, transparent),
+    0 0 36px color-mix(in srgb, var(--accent) 35%, transparent),
+    0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 
+.btn--primary:hover:not(:disabled)::after {
+  translate: 120% 0;
+  transition: translate 750ms var(--ease-out);
+}
+
+/* Ghost: a pane of glass with a hairline border; hover warms the edge and
+   adds a faint cyan "sensor" glow. */
 .btn--ghost {
-  background: color-mix(in srgb, var(--text) 4%, transparent);
   border-color: var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   color: var(--text);
+  box-shadow: var(--edge-hi), 0 6px 18px -8px rgba(0, 0, 0, 0.6);
 }
 
 .btn--ghost:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--text) 10%, transparent);
-  border-color: color-mix(in srgb, var(--text) 28%, transparent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04));
+  border-color: color-mix(in srgb, var(--glow-cool) 34%, var(--line));
+  box-shadow:
+    var(--edge-hi),
+    0 6px 18px -8px rgba(0, 0, 0, 0.6),
+    0 0 22px -6px color-mix(in srgb, var(--glow-cool) 45%, transparent);
 }
 
 .btn--xl {
   min-height: 60px;
   padding: var(--s-3) var(--s-6);
+  border-radius: var(--r-lg);
   font-family: var(--font-display);
   font-size: var(--fs-lg);
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
 
 .btn--block {
@@ -223,27 +275,32 @@ ol {
   padding: 2px var(--s-3);
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
-  background: color-mix(in srgb, var(--text) 5%, transparent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--edge-hi);
   color: var(--text-dim);
   font-size: var(--fs-xs);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   line-height: 1.4;
   white-space: nowrap;
 }
 
-/* Keyboard key caps */
+/* Keyboard key caps: a lit top face and a darker 2px "skirt" underneath,
+   so each key reads as a physical cap. */
 .kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.9em;
-  height: 1.9em;
-  padding: 0 0.45em;
-  border: 1px solid var(--line);
-  border-bottom-width: 3px;
-  border-radius: 6px;
-  background: var(--bg-2);
+  min-width: 1.95em;
+  height: 1.95em;
+  padding: 0 0.5em;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 7px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-2), var(--text) 13%), color-mix(in srgb, var(--bg-2), var(--text) 5%));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 2px 0 var(--bg-deep),
+    0 3px 8px rgba(0, 0, 0, 0.45);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--fs-xs);
@@ -251,14 +308,15 @@ ol {
   line-height: 1;
   vertical-align: middle;
   white-space: nowrap;
+  translate: 0 -1px;
 }
 
 .eyebrow {
-  color: var(--text-faint);
+  color: color-mix(in srgb, var(--glow-cool) 30%, var(--text-faint));
   font-family: var(--font-body);
   font-size: var(--fs-xs);
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
 }
 
@@ -277,7 +335,8 @@ ol {
 
 /* Brand mark: a traffic light in a rounded tile (used on StartScreen and the
    score card). Styled with classes, not attributes, so html-to-image copies
-   the resolved colours into the exported PNG. */
+   the resolved colours into the exported PNG. The SVG children also carry
+   matching fill attributes (see icons.jsx) for the PDF export. */
 .logo-mark__tile {
   fill: var(--bg-2);
   stroke: var(--line);
@@ -285,7 +344,7 @@ ol {
 }
 
 .logo-mark__housing {
-  fill: var(--bg);
+  fill: var(--bg-deep);
   stroke: var(--panel-border);
   stroke-width: 1;
 }
@@ -325,5 +384,9 @@ ol {
 
   .icon-spin {
     animation: none !important;
+  }
+
+  .btn--primary::after {
+    display: none;
   }
 }

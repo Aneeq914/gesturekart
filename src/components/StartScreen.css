@@ -1,96 +1,396 @@
-/* Start screen: brand, how to play, camera, scoring.
-   Mobile: one column (brand → how → camera + CTA → scoring).
-   Desktop: content on the left, camera + CTA in a sticky right column. */
+/* Start screen — "Night Drive" infotainment look over the live 3D road.
+   Phone (one column): hero + CTA → camera → how to play → scoring.
+   Tablet (≥ 700px): hero across the top, camera beside the how-to cards,
+   scoring as a 4-up strip.
+   Desktop (≥ 1024px): asymmetric grid. Hero (left) faces the camera
+   screen (right); how-to cards (left) sit beside the scoring tiles (right).
+   All decorative motion stops under prefers-reduced-motion. */
+
+/* ── Screen + scrim ────────────────────────────────────────────────────── */
+/* The road stays visible: a vignette darkens the edges, a left-to-right
+   wash keeps text legible, and a faint sodium-lamp glow warms the bottom. */
 .start {
   background:
-    radial-gradient(90% 60% at 20% 0%, color-mix(in srgb, var(--bg-2) 70%, transparent), transparent 70%),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bg) 62%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 86%, transparent) 55%,
-      color-mix(in srgb, var(--bg) 94%, transparent) 100%
-    );
+    radial-gradient(140% 110% at 50% 45%, transparent 45%, color-mix(in srgb, var(--bg-deep) 80%, transparent) 100%),
+    radial-gradient(55% 38% at 72% 105%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+    linear-gradient(100deg, color-mix(in srgb, var(--bg) 86%, transparent) 0%, color-mix(in srgb, var(--bg) 58%, transparent) 55%, color-mix(in srgb, var(--bg) 40%, transparent) 100%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 20%, transparent) 0%, color-mix(in srgb, var(--bg) 70%, transparent) 100%);
+}
+
+@media (max-width: 699px) {
+  .start {
+    background:
+      radial-gradient(140% 90% at 50% 40%, transparent 40%, color-mix(in srgb, var(--bg-deep) 80%, transparent) 100%),
+      linear-gradient(180deg, color-mix(in srgb, var(--bg) 55%, transparent) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 45%, color-mix(in srgb, var(--bg) 92%, transparent) 100%);
+  }
 }
 
 .start__inner {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    'brand'
+    'hero'
+    'cam'
     'how'
-    'side'
     'scoring';
   gap: var(--s-4);
   width: 100%;
-  max-width: 1120px;
+  max-width: 1280px;
   margin: auto;
-  padding-block: var(--s-4);
+  padding-block: 0;
 }
 
-.start__brand {
-  grid-area: brand;
+.start__hero {
+  grid-area: hero;
+}
+.cam {
+  grid-area: cam;
 }
 .start__how {
   grid-area: how;
-}
-.start__side {
-  grid-area: side;
 }
 .start__scoring {
   grid-area: scoring;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 700px) {
   .start__inner {
-    grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
-    grid-template-rows: auto auto 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      'brand side'
-      'how side'
-      'scoring side';
-    column-gap: var(--s-6);
+      'hero hero'
+      'cam how'
+      'scoring scoring';
+    gap: var(--s-5);
+  }
+}
+
+@media (min-width: 1024px) {
+  .start__inner {
+    grid-template-columns: minmax(0, 1fr) minmax(350px, 410px);
+    grid-template-areas:
+      'hero cam'
+      'how scoring';
+    column-gap: 40px;
     row-gap: var(--s-5);
   }
 
-  .start__side {
-    position: sticky;
-    top: var(--s-4);
-    align-self: start;
+  .start__hero {
+    align-self: center;
+  }
+
+  /* Tighter rhythm so hero + camera + cards fit a 900px-tall laptop. */
+  .start__how,
+  .start__scoring,
+  .cam {
+    padding: var(--s-5) var(--s-5) 20px;
+  }
+
+  .cam {
+    gap: 14px;
   }
 }
 
-/* ── Brand ─────────────────────────────────────────────────────────────── */
-.start__brand {
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+.start__hero {
+  container-type: inline-size;
   display: grid;
-  gap: var(--s-3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'brand signal'
+    'title title'
+    'tag tag'
+    'cta cta';
+  align-items: center;
+  column-gap: var(--s-4);
   padding-block: var(--s-2) var(--s-3);
 }
 
+@media (min-width: 700px) {
+  .start__hero {
+    grid-template-areas:
+      'brand signal'
+      'title signal'
+      'tag signal'
+      'cta signal';
+    column-gap: var(--s-6);
+  }
+}
+
 .start__brand-row {
+  grid-area: brand;
   display: flex;
   align-items: center;
   gap: var(--s-3);
+  min-width: 0;
 }
 
+.start__brand-row .logo-mark {
+  flex: none;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5));
+}
+
+.start__kicker {
+  gap: var(--s-2);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  font-size: 0.6875rem;
+  color: color-mix(in srgb, var(--glow-cool) 45%, var(--text-dim));
+}
+
+.start__kicker::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--glow-cool);
+  box-shadow: var(--glow-cyan);
+}
+
+/* Wordmark: cool white "Gesture" + lit amber "Kart", each with a soft neon
+   halo (drop-shadow, because text-shadow paints over clipped gradients). */
 .start__title {
-  font-size: var(--fs-hero);
+  grid-area: title;
+  margin-top: var(--s-5);
+  font-size: clamp(2.5rem, 15cqi, 5.75rem);
   font-weight: 800;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.05em;
   line-height: 0.95;
+  background: linear-gradient(180deg, var(--text) 35%, color-mix(in srgb, var(--glow-cool) 35%, var(--text-dim)) 115%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 30px color-mix(in srgb, var(--glow-cool) 22%, transparent));
+}
+
+.start__title-accent {
+  background: var(--grad-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--accent) 45%, transparent));
+}
+
+@media (min-width: 700px) {
+  .start__title {
+    font-size: clamp(3rem, 12.5cqi, 5.75rem);
+  }
 }
 
 .start__tagline {
+  grid-area: tag;
   max-width: 34ch;
+  margin-top: var(--s-4);
   color: var(--text-dim);
-  font-size: var(--fs-lg);
-  line-height: 1.4;
+  font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.3125rem);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+/* A thin "light trail" between wordmark and tagline. */
+.start__tagline::before {
+  content: '';
+  display: block;
+  width: min(160px, 40%);
+  height: 2px;
+  margin-bottom: var(--s-4);
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--glow-cool) 70%, transparent) 60%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+.start__cta {
+  grid-area: cta;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-5);
+  margin-top: var(--s-5);
+}
+
+.start__cta > .tt {
+  flex: 1 1 100%;
+}
+
+@media (min-width: 700px) {
+  .start__cta > .tt {
+    flex: 0 1 300px;
+  }
+}
+
+.start__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  color: var(--text-faint);
+  font-family: var(--font-num);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.start__meta b {
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.start__meta-sep {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* ── Animated traffic light (CSS only, aria-hidden) ───────────────────── */
+/* Each lamp has a dim "off" lens and a lit ::after layer. The lit layers
+   take turns: red → amber → green → red. Under reduced motion only red
+   is lit, with no animation. */
+.signal {
+  --lamp: 16px;
+  --cycle: 7.5s;
+
+  grid-area: signal;
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (min-width: 700px) {
+  .signal {
+    --lamp: clamp(22px, 3.2vw, 34px);
+
+    align-self: center;
+  }
+}
+
+.signal__housing {
+  position: relative;
+  display: grid;
+  gap: calc(var(--lamp) * 0.36);
+  padding: calc(var(--lamp) * 0.42) calc(var(--lamp) * 0.34);
+  border: 1px solid var(--hairline);
+  border-radius: calc(var(--lamp) * 0.75);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-2), var(--text) 9%), var(--bg-deep));
+  box-shadow:
+    var(--edge-hi),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.5),
+    var(--shadow-lg);
+}
+
+.signal__lamp {
+  --c: var(--red);
+
+  position: relative;
+  width: var(--lamp);
+  height: var(--lamp);
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, color-mix(in srgb, var(--c) 30%, var(--bg-deep)), color-mix(in srgb, var(--c) 10%, var(--bg-deep)) 70%);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+
+.signal__lamp--amber {
+  --c: var(--amber);
+}
+
+.signal__lamp--green {
+  --c: var(--green);
+}
+
+.signal__lamp::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, color-mix(in srgb, var(--c), white 70%) 0 10%, color-mix(in srgb, var(--c), white 25%) 28%, var(--c) 58%, color-mix(in srgb, var(--c), black 30%) 100%);
+  box-shadow:
+    0 0 calc(var(--lamp) * 0.6) color-mix(in srgb, var(--c) 85%, transparent),
+    0 0 calc(var(--lamp) * 2) calc(var(--lamp) * 0.25) color-mix(in srgb, var(--c) 35%, transparent);
+  opacity: 0;
+  animation: var(--cycle) linear infinite;
+}
+
+.signal__lamp--red::after {
+  opacity: 1;
+  animation-name: lamp-red;
+}
+
+.signal__lamp--amber::after {
+  animation-name: lamp-amber;
+}
+
+.signal__lamp--green::after {
+  animation-name: lamp-green;
+}
+
+@keyframes lamp-red {
+  0%,
+  42% {
+    opacity: 1;
+  }
+  45%,
+  97% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes lamp-amber {
+  0%,
+  42% {
+    opacity: 0;
+  }
+  45%,
+  56% {
+    opacity: 1;
+  }
+  59%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes lamp-green {
+  0%,
+  56% {
+    opacity: 0;
+  }
+  59%,
+  94% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.signal__pole {
+  display: none;
+  width: calc(var(--lamp) * 0.28);
+  height: calc(var(--lamp) * 3.2);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-2), var(--text) 14%), transparent);
+}
+
+@media (min-width: 700px) {
+  .signal__pole {
+    display: block;
+  }
 }
 
 /* ── Shared panel heading ──────────────────────────────────────────────── */
 .start__h2 {
   font-size: var(--fs-lg);
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .start__how,
@@ -107,54 +407,123 @@
   }
 }
 
-/* ── How to play ───────────────────────────────────────────────────────── */
+/* ── How to play: 3 cards with animated mini scenes ───────────────────── */
+.start__how {
+  container-type: inline-size;
+}
+
 .how {
   display: grid;
-  margin-top: var(--s-3);
+  gap: var(--s-3);
+  margin-top: var(--s-4);
 }
 
-.how__item {
+.how__card {
+  --tone: var(--glow-cool);
+
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-columns: 96px minmax(0, 1fr);
   align-items: center;
   gap: var(--s-4);
-  padding-block: var(--s-3);
+  padding: var(--s-2);
+  padding-right: var(--s-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  box-shadow: var(--edge-hi);
 }
 
-.how__item + .how__item {
-  border-top: 1px solid var(--panel-border);
+.how__card--stop {
+  --tone: var(--amber);
 }
 
-.how__icon {
+.how__card--keys {
+  --tone: var(--blue);
+}
+
+@container (min-width: 620px) {
+  .how {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .how__card {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    align-content: start;
+    gap: var(--s-3);
+    padding: var(--s-2) var(--s-2) var(--s-3);
+  }
+
+  .how__body {
+    padding-inline: 6px;
+  }
+
+  .how__art {
+    height: 84px;
+  }
+}
+
+/* Narrow phones: a slimmer art column leaves room for the text. */
+@container (max-width: 300px) {
+  .how__card {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: var(--s-3);
+  }
+
+  .how__art {
+    height: 76px;
+  }
+
+  .keys-demo {
+    transform: scale(0.82);
+  }
+}
+
+/* A tiny dark "screen" for each scene: tone glow + faint grid. */
+.how__art {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: var(--r-md);
-  background: color-mix(in srgb, var(--blue) 14%, transparent);
-  color: var(--blue);
+  height: 84px;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: calc(var(--r-md) - 4px);
+  background:
+    radial-gradient(80% 90% at 50% 100%, color-mix(in srgb, var(--tone) 18%, transparent), transparent 70%),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 100% 12px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 12px 100%,
+    var(--bg-deep);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
+  color: var(--tone);
 }
 
-.how__icon--stop {
-  background: color-mix(in srgb, var(--amber) 14%, transparent);
-  color: var(--amber);
+.how__body {
+  min-width: 0;
 }
 
-.how__icon--keys {
-  background: color-mix(in srgb, var(--text) 7%, transparent);
-  color: var(--text-dim);
+.how__step {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--tone);
+  font-family: var(--font-num);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--tone) 60%, transparent);
 }
 
 .how__title {
   font-size: var(--fs-md);
   font-weight: 600;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
 }
 
 .how__text {
-  margin-top: 2px;
+  margin-top: var(--s-1);
   color: var(--text-dim);
   font-size: var(--fs-sm);
+  line-height: 1.45;
 }
 
 .how__keys {
@@ -167,45 +536,269 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: var(--s-1) 3px;
+}
+
+/* ── Mini scenes (SVG). Base styles are the static "reduced motion" pose. */
+.scene {
+  width: 100%;
+  max-width: 120px;
+  height: 100%;
+  max-height: 80px;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, currentColor 45%, transparent));
+}
+
+.scene__ground {
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+
+/* Lean: torso sways around the hips; the matching chevron lights up. */
+.scene__torso {
+  transform-box: view-box;
+  transform-origin: 60px 50px;
+  transform: rotate(-12deg);
+  animation: scene-lean 2.6s var(--ease-in-out) infinite;
+}
+
+.scene__chev--r {
+  opacity: 0.18;
+}
+
+.scene__chev--l {
+  animation: scene-chev-l 2.6s var(--ease-in-out) infinite;
+}
+
+.scene__chev--r {
+  animation: scene-chev-r 2.6s var(--ease-in-out) infinite;
+}
+
+@keyframes scene-lean {
+  0%,
+  18% {
+    transform: rotate(-13deg);
+  }
+  50%,
+  68% {
+    transform: rotate(13deg);
+  }
+  100% {
+    transform: rotate(-13deg);
+  }
+}
+
+@keyframes scene-chev-l {
+  0%,
+  22% {
+    opacity: 1;
+  }
+  40%,
+  88% {
+    opacity: 0.18;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes scene-chev-r {
+  0%,
+  36% {
+    opacity: 0.18;
+  }
+  50%,
+  72% {
+    opacity: 1;
+  }
+  88%,
+  100% {
+    opacity: 0.18;
+  }
+}
+
+/* Raise: the arm swings up over the head and the brake light comes on. */
+.scene__arm {
+  transform-box: view-box;
+  transform-origin: 57px 31px;
+  animation: scene-raise 2.8s var(--ease-in-out) infinite;
+}
+
+.scene__palm {
+  fill: currentColor;
+  stroke: none;
+}
+
+.scene__brake {
+  fill: var(--red);
+  stroke: var(--red);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px var(--red));
+  animation: scene-brake 2.8s var(--ease-in-out) infinite;
+}
+
+@keyframes scene-raise {
+  0%,
+  14% {
+    transform: rotate(132deg);
+  }
+  38%,
+  78% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(132deg);
+  }
+}
+
+@keyframes scene-brake {
+  0%,
+  30% {
+    fill: color-mix(in srgb, var(--red) 10%, transparent);
+    filter: none;
+  }
+  40%,
+  78% {
+    fill: var(--red);
+    filter: drop-shadow(0 0 6px var(--red));
+  }
+  90%,
+  100% {
+    fill: color-mix(in srgb, var(--red) 10%, transparent);
+    filter: none;
+  }
+}
+
+/* Keys: three keycaps press in turn (left, right, Space). */
+.keys-demo {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  justify-content: center;
+  gap: 7px 6px;
+}
+
+.keys-demo__key {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  height: 26px;
+  padding: 0 var(--s-2);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-2), var(--text) 14%), color-mix(in srgb, var(--bg-2), var(--text) 5%));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 3px 0 var(--bg-deep),
+    0 5px 10px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 1;
+  animation: key-press 3s var(--ease-out) infinite;
+}
+
+.keys-demo__key--r {
+  animation-delay: 1s;
+}
+
+.keys-demo__key--space {
+  grid-column: 1 / -1;
+  min-width: 76px;
+  animation-delay: 2s;
+}
+
+@keyframes key-press {
+  0%,
+  4% {
+    transform: translateY(0);
+  }
+  9%,
+  22% {
+    transform: translateY(3px);
+    border-color: color-mix(in srgb, var(--tone) 70%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 0 0 var(--bg-deep),
+      0 0 16px color-mix(in srgb, var(--tone) 60%, transparent);
+    color: var(--tone);
+  }
+  30%,
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* ── Scoring: glowing point tiles ─────────────────────────────────────── */
+.start__scoring {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+}
+
+.start__scoring-head {
+  display: grid;
   gap: var(--s-1);
 }
 
-/* ── Scoring ───────────────────────────────────────────────────────────── */
 .start__rules-note {
-  margin-top: var(--s-1);
   color: var(--text-dim);
   font-size: var(--fs-sm);
 }
 
 .start__rules-note strong {
   color: var(--accent);
-  font-weight: 700;
+  font-family: var(--font-num);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .rules {
   display: grid;
-  gap: var(--s-1);
-  margin-top: var(--s-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  flex: 1 1 auto;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
 }
 
-@media (min-width: 560px) and (max-width: 899px) {
+/* li → Tooltip wrapper → tile all stretch, so tiles fill their row. */
+.rules > li {
+  display: flex;
+}
+
+@container (min-width: 760px) {
   .rules {
-    grid-template-columns: 1fr 1fr;
-    column-gap: var(--s-3);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
 
 .rule {
   --tone: var(--text-dim);
 
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
+  position: relative;
+  display: grid;
+  grid-template-areas:
+    'points'
+    'label';
+  align-content: start;
+  gap: var(--s-1);
+  height: 100%;
   min-height: 44px;
-  padding: var(--s-2) var(--s-3);
-  border-radius: var(--r-sm);
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--tone) 12%, transparent), transparent 60%),
+    rgba(255, 255, 255, 0.02);
+  box-shadow: var(--edge-hi);
   cursor: help;
-  transition: background-color var(--dur-fast) var(--ease-out);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
 }
 
 .rule[data-tone='good'] {
@@ -218,53 +811,186 @@
 
 .rule:hover,
 .rule:focus-visible {
-  background: color-mix(in srgb, var(--text) 6%, transparent);
+  border-color: color-mix(in srgb, var(--tone) 45%, transparent);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow:
+    var(--edge-hi),
+    0 0 24px -8px color-mix(in srgb, var(--tone) 70%, transparent);
+}
+
+.rule__points {
+  grid-area: points;
+  color: var(--tone);
+  font-family: var(--font-num);
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--tone) 55%, transparent);
+}
+
+.rule__label {
+  grid-area: label;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .rule__dot {
   flex: none;
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--tone);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 60%, transparent);
+  box-shadow: 0 0 8px var(--tone);
 }
 
-.rule__label {
-  min-width: 0;
-  font-weight: 500;
-}
-
+/* Pinned to the tile's top-right so the label gets the full width. */
 .rule__info {
-  flex: none;
+  position: absolute;
+  top: var(--s-3);
+  right: var(--s-3);
   color: var(--text-faint);
+  transition: color var(--dur-fast) var(--ease-out);
 }
 
-.rule__points {
-  margin-left: auto;
+.rule:hover .rule__info,
+.rule:focus-visible .rule__info {
   color: var(--tone);
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
 }
 
-/* ── Camera + CTA ──────────────────────────────────────────────────────── */
-.start__side {
-  display: grid;
-  gap: var(--s-4);
+/* Very narrow phones: one tile per row, label left and points right. */
+@container (max-width: 279px) {
+  .rules {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
+  }
+
+  .rules .rule {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'label points';
+    align-items: center;
+    gap: var(--s-3);
+    padding-right: var(--s-6);
+  }
+
+  .rules .rule__points {
+    font-size: var(--fs-lg);
+  }
+
+  .rules .rule__info {
+    top: 50%;
+    translate: 0 -50%;
+  }
 }
 
+/* ── Camera: an infotainment screen ───────────────────────────────────── */
 .cam {
   display: grid;
-  gap: var(--s-3);
+  align-content: start;
+  gap: var(--s-4);
 }
 
 .cam__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--s-3);
+}
+
+.cam__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+/* Status LED on the bezel: OFF (dim), INIT (cyan pulse), LIVE (green). */
+.cam__led {
+  --tone: var(--text-faint);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--bg-deep) 70%, transparent);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+  color: var(--tone);
+  font-family: var(--font-num);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  line-height: 1;
+}
+
+.cam__led[data-led='busy'] {
+  --tone: var(--glow-cool);
+}
+
+.cam__led[data-led='live'] {
+  --tone: var(--green);
+}
+
+.cam__led-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tone);
+  opacity: 0.6;
+}
+
+.cam__led[data-led='busy'] .cam__led-dot,
+.cam__led[data-led='live'] .cam__led-dot {
+  opacity: 1;
+  box-shadow: 0 0 10px var(--tone);
+  animation: cam-pulse 1.4s var(--ease-out) infinite;
+}
+
+/* Bezel: a dark metal frame with a sensor dot and a faint glass glare. */
+.cam__bezel {
+  position: relative;
+  padding: 12px 8px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: calc(var(--r-md) + 8px);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-2), var(--text) 9%), var(--bg-deep) 60%);
+  box-shadow:
+    var(--edge-hi),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 22px 40px -18px rgba(0, 0, 0, 0.85);
+}
+
+.cam__bezel::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--glow-cool) 60%, var(--bg-deep));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--glow-cool) 60%, transparent);
+}
+
+.cam__bezel::after {
+  content: '';
+  position: absolute;
+  inset: 12px 8px 8px;
+  z-index: 1;
+  border-radius: var(--r-md);
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.07) 0%, transparent 32%);
+  pointer-events: none;
 }
 
 .cam__preview {
@@ -283,7 +1009,7 @@
 }
 
 .cam__status[data-status='loading'] {
-  --tone: var(--blue);
+  --tone: var(--glow-cool);
 }
 .cam__status[data-status='ready'] {
   --tone: var(--green);
@@ -320,9 +1046,10 @@
 
 .cam__hint {
   padding: var(--s-2) var(--s-3);
+  border: 1px solid color-mix(in srgb, var(--green) 22%, transparent);
   border-left: 3px solid var(--green);
   border-radius: var(--r-sm);
-  background: color-mix(in srgb, var(--green) 9%, transparent);
+  background: color-mix(in srgb, var(--green) 8%, transparent);
   color: var(--text-dim);
   font-size: var(--fs-sm);
 }
@@ -342,6 +1069,7 @@
 .cam__toggle[data-on]:hover:not(:disabled) {
   background: color-mix(in srgb, var(--red) 8%, transparent);
   border-color: color-mix(in srgb, var(--red) 45%, transparent);
+  box-shadow: var(--edge-hi), 0 0 22px -6px color-mix(in srgb, var(--red) 45%, transparent);
 }
 
 .cam__live {
@@ -354,8 +1082,17 @@
   animation: cam-pulse 1.6s var(--ease-out) infinite;
 }
 
+/* ── Reduced motion: every decorative loop stops in a readable pose ───── */
 @media (prefers-reduced-motion: reduce) {
-  .cam__live {
-    animation: none;
+  .cam__live,
+  .cam__led-dot,
+  .signal__lamp::after,
+  .scene__torso,
+  .scene__chev--l,
+  .scene__chev--r,
+  .scene__arm,
+  .scene__brake,
+  .keys-demo__key {
+    animation: none !important;
   }
 }

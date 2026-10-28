@@ -1,7 +1,20 @@
-/* In-game HUD. The whole layer is click-through; only the pills opt in.
-   Everything hugs the top edge or the bottom corners, so the middle of the
-   road (where the car, lights and obstacles are) stays clear. */
+/* In-game HUD: a night car instrument cluster.
+   Layout: score top-left, time ring top-right, event banner drops in at top
+   centre, speedometer + indicator lamps bottom-centre (below the car), legend
+   bottom-left (desktop), rear-view camera bezel bottom-right. The middle of
+   the screen — the road ahead — is always left clear.
+   The whole layer is click-through; only tooltips and the camera opt in. */
 .hud {
+  /* Cluster sizes; shrunk in the media queries at the bottom. */
+  --gauge-w: 236px;
+  --lamp: 36px;
+  --ring: 78px;
+  --hud-c: var(--glow-cool, #5ee7ff);
+  --hud-glass:
+    var(--glass-sheen, linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 45%)),
+    linear-gradient(180deg, rgba(14, 20, 42, 0.62), rgba(6, 9, 20, 0.78));
+  --hud-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -14,81 +27,84 @@
   pointer-events: auto;
 }
 
-/* ── Top bar ───────────────────────────────────────────────────────────── */
-.hud__top {
-  position: absolute;
-  top: calc(var(--s-3) + var(--safe-t));
-  left: calc(var(--gutter) + var(--safe-l));
-  right: calc(var(--gutter) + var(--safe-r));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--s-3);
-}
-
-.hud__stats {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  gap: var(--s-2);
-  max-width: 100%;
-}
-
-.stat {
-  display: grid;
-  align-content: center;
-  justify-items: start;
-  gap: 2px;
-  min-width: 104px;
-  min-height: 56px;
-  height: 100%;
-  padding: var(--s-2) var(--s-4);
+/* Shared glass surface for every module */
+.hud-score,
+.timering,
+.gauge,
+.toast,
+.hud__legend,
+.hud__camera {
   border: 1px solid var(--panel-border);
-  border-radius: var(--r-md);
-  background: var(--panel);
+  background: var(--hud-glass);
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
-  box-shadow: var(--shadow);
-  transition: border-color var(--dur) var(--ease-out);
+  box-shadow: var(--hud-edge), var(--shadow);
 }
 
-.stat__label {
+.hud-label {
   color: var(--text-faint);
-  font-size: var(--fs-xs);
+  font-family: var(--font-body);
+  font-size: 0.625rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-caps, 0.16em);
   line-height: 1.2;
   text-transform: uppercase;
 }
 
-.stat__value {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--s-1);
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  line-height: 1;
+/* .hud__top spans the whole HUD so it can hold score, time and speed (the
+   e2e scripts read all three from its innerText). It stays click-through. */
+.hud__top {
+  position: absolute;
+  inset: 0;
 }
 
-.stat__unit {
-  color: var(--text-dim);
-  font-family: var(--font-body);
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0;
+.hud__corner {
+  position: absolute;
+  top: calc(var(--s-3) + var(--safe-t));
 }
 
-.stat--score {
-  min-width: 128px;
+.hud__corner--left {
+  left: calc(var(--gutter) + var(--safe-l));
+}
+
+.hud__corner--right {
+  right: calc(var(--gutter) + var(--safe-r));
+}
+
+/* ── Score module (top-left) ───────────────────────────────────────────── */
+.hud-score {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  min-width: 132px;
+  padding: 10px 18px 12px;
+  border-radius: var(--r-lg);
   cursor: help;
 }
 
-.stat--score .stat__value {
+/* A faint amber filament along the top edge, like a lit instrument bezel */
+.hud-score::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 70%, transparent), transparent);
+}
+
+.hud-score__value {
   color: var(--accent);
-  font-size: calc(var(--fs-xl) * 1.2);
+  font-family: var(--font-num, var(--font-display));
+  font-size: 2.125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-shadow:
+    0 0 18px color-mix(in srgb, var(--accent) 55%, transparent),
+    0 0 2px color-mix(in srgb, var(--accent) 60%, transparent);
   animation: hud-pop var(--dur) var(--ease-out);
 }
 
@@ -98,76 +114,137 @@
   }
 }
 
-.stat--time[data-low] {
-  border-color: color-mix(in srgb, var(--red) 55%, transparent);
+/* ── Time ring (top-right) ─────────────────────────────────────────────── */
+.timering {
+  --ring-c: var(--hud-c);
+
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--ring);
+  height: var(--ring);
+  border-radius: 50%;
 }
 
-.stat--time[data-low] .stat__value {
+.timering__dial {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.timering__track,
+.timering__value {
+  fill: none;
+  stroke-width: 3.5;
+}
+
+.timering__track {
+  stroke: rgba(255, 255, 255, 0.07);
+}
+
+.timering__value {
+  stroke: var(--ring-c);
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--ring-c) 70%, transparent));
+  transition:
+    stroke-dashoffset 1s linear,
+    stroke var(--dur) var(--ease-out);
+}
+
+.timering__read {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  line-height: 1;
+}
+
+.timering__clock {
+  color: var(--text);
+  font-family: var(--font-num, var(--font-display));
+  font-size: calc(var(--ring) * 0.24);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  transition: color var(--dur) var(--ease-out);
+}
+
+.timering__label {
+  font-size: 0.5rem;
+}
+
+.timering[data-low] {
+  --ring-c: var(--red);
+
+  animation: hud-ring-pulse 1s var(--ease-in-out, ease-in-out) infinite;
+}
+
+.timering[data-low] .timering__clock {
   color: var(--red);
-  animation: hud-tick 1s steps(1) infinite;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--red) 60%, transparent);
 }
 
-@keyframes hud-tick {
+@keyframes hud-ring-pulse {
   50% {
-    opacity: 0.6;
+    box-shadow:
+      var(--hud-edge),
+      var(--shadow),
+      0 0 28px color-mix(in srgb, var(--red) 55%, transparent);
   }
 }
 
-/* One compact row on phones */
-@media (max-width: 560px) {
-  .hud__stats {
-    width: 100%;
-    gap: var(--s-1);
-  }
-
-  .hud__stats > * {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
-  .stat,
-  .stat--score {
-    min-width: 0;
-    min-height: 48px;
-    width: 100%;
-    padding: var(--s-1) var(--s-3);
-  }
-
-  .stat__label {
-    font-size: 0.625rem;
-  }
-
-  .stat__value {
-    font-size: var(--fs-lg);
-  }
-
-  .stat--score .stat__value {
-    font-size: calc(var(--fs-lg) * 1.2);
-  }
-}
-
-/* ── Event toast ───────────────────────────────────────────────────────── */
+/* ── Event banner (drops from top centre) ─────────────────────────────── */
 .hud__toasts {
+  position: absolute;
+  top: calc(var(--s-3) + var(--safe-t));
+  left: 50%;
   display: flex;
   justify-content: center;
-  min-height: 0;
+  width: min(380px, calc(100% - 2 * var(--gutter)));
+  translate: -50% 0;
 }
 
 .toast {
   --tone: var(--text-dim);
 
-  display: inline-flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--s-2);
+  gap: var(--s-3);
+  width: max-content;
+  min-width: min(260px, 100%);
   max-width: 100%;
-  padding: var(--s-2) var(--s-4) var(--s-2) var(--s-2);
-  border: 1px solid color-mix(in srgb, var(--tone) 50%, transparent);
-  border-radius: var(--r-pill);
-  background: color-mix(in srgb, var(--tone) 16%, var(--panel-solid));
+  padding: 10px 18px 10px 16px;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--tone) 16%, transparent), transparent 60%),
+    var(--hud-glass);
   box-shadow:
+    var(--hud-edge),
     var(--shadow),
-    0 0 32px color-mix(in srgb, var(--tone) 22%, transparent);
-  animation: hud-toast-in var(--dur) var(--ease-out) both;
+    0 0 36px -8px color-mix(in srgb, var(--tone) 40%, transparent);
+  animation: hud-toast-in 320ms var(--ease-out) both;
+}
+
+/* Coloured left edge with a neon glow */
+.toast::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--tone);
+  box-shadow:
+    0 0 10px var(--tone),
+    0 0 2px var(--tone);
 }
 
 .toast[data-tone='good'] {
@@ -186,174 +263,393 @@
   display: grid;
   place-items: center;
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
   border-radius: 50%;
-  background: var(--tone);
-  color: var(--bg);
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  color: var(--tone);
 }
 
-.toast__points {
-  color: var(--tone);
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
+.toast__text {
+  display: grid;
+  min-width: 0;
+  line-height: 1.25;
 }
 
 .toast__label {
   overflow: hidden;
+  color: var(--text);
+  font-size: var(--fs-sm);
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.toast__kind {
+  color: var(--text-faint);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.toast__points {
+  color: var(--tone);
+  font-family: var(--font-num, var(--font-display));
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 16px color-mix(in srgb, var(--tone) 55%, transparent);
+}
+
 @keyframes hud-toast-in {
   from {
     opacity: 0;
-    transform: translateY(-10px) scale(0.94);
+    transform: translateY(-22px) scale(0.96);
   }
 }
 
 @keyframes hud-toast-out {
   to {
     opacity: 0;
-    transform: translateY(-6px) scale(0.97);
+    transform: translateY(-14px) scale(0.98);
   }
 }
 
-/* ── Control indicator (bottom-left) ───────────────────────────────────── */
-.hud__control {
+/* ── Instrument cluster (bottom-centre, below the car) ────────────────── */
+.hud__cluster {
   position: absolute;
-  left: calc(var(--gutter) + var(--safe-l));
-  bottom: calc(var(--gutter) + var(--safe-b));
+  left: 50%;
+  bottom: calc(var(--s-2) + var(--safe-b));
+  translate: -50% 0;
 }
 
-.control {
-  --tone: var(--text-dim);
+/* Equal 1fr wings keep the gauge centred whatever the telltale widths. */
+.hud__control {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  column-gap: var(--s-3);
+  padding: 0 12px;
+}
 
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  min-height: 52px;
-  padding: var(--s-1) var(--s-4) var(--s-1) var(--s-1);
+/* Low glass dash plate behind the wings: ties lamps, telltales and the
+   speedometer dome into one instrument cluster. */
+.hud__control::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: calc(var(--lamp) + 46px);
   border: 1px solid var(--panel-border);
-  border-radius: var(--r-pill);
-  background: var(--panel);
+  border-radius: var(--r-lg);
+  background: var(--hud-glass);
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
-  box-shadow: var(--shadow);
+  box-shadow: var(--hud-edge), var(--shadow);
+}
+
+.hud__wing,
+.gauge {
+  position: relative;
+  z-index: 1;
+}
+
+.hud__wing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  padding-bottom: 10px;
+}
+
+/* Small dashboard telltales: input source + BRAKE.
+   No text-transform here: innerText would turn "Keyboard" into "KEYBOARD"
+   and the e2e check reads this word. Small caps give the same look. */
+.telltale {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 20px;
+  padding: 1px 8px 2px;
+  border: 1px solid var(--hairline, rgba(255, 255, 255, 0.08));
+  border-radius: var(--r-pill);
+  background: rgba(4, 6, 14, 0.6);
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-variant-caps: all-small-caps;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.telltale--source {
+  color: var(--text-dim);
   cursor: help;
 }
 
-.control[data-tone='move'] {
-  --tone: var(--blue);
+.telltale--source[data-source='camera'] {
+  border-color: color-mix(in srgb, var(--hud-c) 35%, transparent);
+  color: var(--hud-c);
 }
 
-.control[data-tone='stop'] {
-  --tone: var(--amber);
+.telltale--source:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-.control__icon {
+.telltale--brake {
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.telltale--brake[data-on] {
+  border-color: color-mix(in srgb, var(--red) 70%, transparent);
+  background: color-mix(in srgb, var(--red) 22%, rgba(4, 6, 14, 0.6));
+  color: #ffd5d9;
+  box-shadow: var(--glow-red, 0 0 22px rgba(255, 77, 94, 0.55));
+}
+
+/* Turn-signal lamps */
+.lamp {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: var(--lamp);
+  height: var(--lamp);
+  border: 1px solid var(--hairline, rgba(255, 255, 255, 0.08));
   border-radius: 50%;
-  background: color-mix(in srgb, var(--tone) 18%, transparent);
-  color: var(--tone);
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.07), transparent 65%),
+    var(--bg-deep, #04060e);
+  box-shadow:
+    var(--hud-edge),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.45),
+    0 6px 16px rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.2);
   transition:
-    background-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
-.control__text {
-  display: grid;
-  line-height: 1.2;
+.lamp[data-on] {
+  border-color: color-mix(in srgb, var(--green) 65%, transparent);
+  background:
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--green) 38%, transparent), transparent 75%),
+    var(--bg-deep, #04060e);
+  box-shadow:
+    var(--hud-edge),
+    0 0 18px color-mix(in srgb, var(--green) 60%, transparent),
+    0 0 4px color-mix(in srgb, var(--green) 80%, transparent);
+  color: var(--green);
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--green) 70%, transparent));
+  animation: hud-blink 0.72s steps(1, end) infinite;
 }
 
-.control__label {
+/* Real indicators flash on/off; the "off" half drops back to the dark lamp. */
+@keyframes hud-blink {
+  50% {
+    border-color: var(--hairline, rgba(255, 255, 255, 0.08));
+    background: var(--bg-deep, #04060e);
+    box-shadow: var(--hud-edge);
+    color: color-mix(in srgb, var(--green) 30%, transparent);
+    filter: none;
+  }
+}
+
+/* Speedometer: a glass dome whose top is concentric with the SVG arc */
+.gauge {
+  --gauge-c: var(--amber);
+
+  position: relative;
+  width: var(--gauge-w);
+  padding: 8px 8px 2px;
+  /* Flat, borderless bottom: the dome grows straight out of the dash plate */
+  border-bottom: 0;
+  border-radius: calc(var(--gauge-w) / 2) calc(var(--gauge-w) / 2) 0 0;
+  background:
+    radial-gradient(60% 55% at 50% 100%, color-mix(in srgb, var(--gauge-c) 13%, transparent), transparent 75%),
+    var(--hud-glass);
+  box-shadow:
+    var(--hud-edge),
+    var(--shadow),
+    0 0 44px -14px color-mix(in srgb, var(--gauge-c) 45%, transparent);
+  transition: box-shadow var(--dur) var(--ease-out);
+}
+
+.gauge[data-braking] {
+  --gauge-c: color-mix(in srgb, var(--red) 72%, var(--amber));
+}
+
+.gauge__dial {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  color: var(--gauge-c);
+  transition: color var(--dur) var(--ease-out);
+}
+
+.gauge__track,
+.gauge__arc {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.gauge__track {
+  stroke: rgba(255, 255, 255, 0.07);
+}
+
+.gauge__arc {
+  stroke: currentColor;
+  filter: drop-shadow(0 0 5px currentColor);
+  transition: stroke-dashoffset 300ms var(--ease-out);
+}
+
+.gauge__tick {
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  transition: stroke var(--dur-fast) var(--ease-out);
+}
+
+.gauge__tick[data-major] {
+  stroke: rgba(255, 255, 255, 0.34);
+  stroke-width: 2.2;
+}
+
+.gauge__tick[data-lit] {
+  stroke: color-mix(in srgb, currentColor 75%, transparent);
+}
+
+.gauge__read {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.gauge__num {
+  color: var(--text);
+  font-family: var(--font-num, var(--font-display));
+  font-size: calc(var(--gauge-w) * 0.2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  text-shadow: 0 0 22px color-mix(in srgb, var(--gauge-c) 45%, transparent);
+}
+
+.gauge__unit {
+  color: var(--text-faint);
+  font-size: 0.625rem;
   font-weight: 700;
+  letter-spacing: 0.1em;
 }
 
-.control__source {
-  display: inline-flex;
+/* ── Controls legend (desktop only, bottom-left) ──────────────────────── */
+.hud__legend {
+  position: absolute;
+  left: calc(var(--gutter) + var(--safe-l));
+  bottom: calc(var(--s-3) + var(--safe-b));
+  display: grid;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.hud__legend > span {
+  display: flex;
   align-items: center;
   gap: var(--s-1);
-  color: var(--text-faint);
-  font-size: var(--fs-xs);
-  font-weight: 500;
 }
 
-@media (max-width: 560px) {
-  .control {
-    gap: var(--s-2);
-    min-height: 48px;
-    padding-right: var(--s-3);
-  }
-
-  .control__icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .control__label {
-    font-size: var(--fs-sm);
-  }
+.hud__legend > span > span {
+  margin-left: 4px;
 }
 
-@media (max-width: 360px) {
-  .control__text {
+@media (max-width: 960px), (pointer: coarse) {
+  .hud__legend {
     display: none;
   }
-
-  .control {
-    padding-right: var(--s-1);
-  }
 }
 
-/* ── Camera thumbnail (bottom-right) ───────────────────────────────────── */
+/* ── Rear-view camera bezel (bottom-right) ────────────────────────────── */
 .hud__camera {
   position: absolute;
   right: calc(var(--gutter) + var(--safe-r));
-  bottom: calc(var(--gutter) + var(--safe-b));
+  bottom: calc(var(--s-3) + var(--safe-b));
   display: flex;
-  align-items: flex-end;
-  gap: var(--s-2);
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 20px;
+  transition:
+    border-color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
 }
 
-/* Camera ON/OFF toggle: sits just left of the thumbnail, bottom-aligned, so
-   it never reaches toward the middle of the road. 44px (40px on phones)
-   keeps it an easy thumb target. */
+.hud__camera:has(.cam-preview[data-live]) {
+  border-color: color-mix(in srgb, var(--hud-c) 28%, transparent);
+  box-shadow:
+    var(--hud-edge),
+    var(--shadow),
+    0 0 26px -6px color-mix(in srgb, var(--hud-c) 40%, transparent);
+}
+
+/* Camera ON/OFF toggle: a round knob mounted on the bezel's left side, so
+   it never reaches toward the middle of the road. 40px keeps it an easy
+   thumb target. */
 .cam-toggle {
   display: grid;
   place-items: center;
   flex: none;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  border: 1px solid var(--panel-border);
+  border: 1px solid var(--hairline, rgba(255, 255, 255, 0.08));
   border-radius: var(--r-pill);
-  background: var(--panel);
-  -webkit-backdrop-filter: var(--blur);
-  backdrop-filter: var(--blur);
-  box-shadow: var(--shadow);
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.08), transparent 70%),
+    var(--bg-deep, #04060e);
+  box-shadow:
+    var(--hud-edge),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.4);
   color: var(--text-dim);
   cursor: pointer;
   transition:
     background-color var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
     color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
     transform var(--dur-fast) var(--ease-out);
 }
 
 .cam-toggle[data-on] {
-  color: var(--text);
+  border-color: color-mix(in srgb, var(--hud-c) 45%, transparent);
+  box-shadow:
+    var(--hud-edge),
+    0 0 14px -2px color-mix(in srgb, var(--hud-c) 55%, transparent);
+  color: var(--hud-c);
 }
 
 .cam-toggle:hover:not(:disabled) {
   border-color: var(--line);
-  background: color-mix(in srgb, var(--text) 10%, var(--panel));
   color: var(--text);
 }
 
@@ -371,45 +667,109 @@
   color: var(--text-faint);
 }
 
+/* ── Phones: compact cluster, camera stacks above it on the right ─────── */
 @media (max-width: 600px) {
-  .cam-toggle {
-    width: 40px;
-    height: 40px;
+  .hud {
+    --gauge-w: 176px;
+    --lamp: 32px;
+    --ring: 62px;
+    --cluster-h: 98px;
+  }
+
+  .hud-score {
+    min-width: 0;
+    padding: 8px 14px 10px;
+    border-radius: var(--r-md);
+  }
+
+  .hud-score__value {
+    font-size: 1.625rem;
+  }
+
+  /* Below the score / time row so the banner never squeezes between them */
+  .hud__toasts {
+    top: calc(var(--s-3) + var(--safe-t) + var(--ring) + var(--s-2));
+  }
+
+  .toast {
+    padding: 8px 14px 8px 12px;
+    gap: var(--s-2);
+  }
+
+  .toast__icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .toast__points {
+    font-size: 1.25rem;
+  }
+
+  .hud__camera {
+    bottom: calc(var(--s-2) + var(--safe-b) + var(--cluster-h) + var(--s-2));
+    gap: 4px;
+    padding: 4px;
+    border-radius: 16px;
+  }
+
+  .hud__control {
+    column-gap: 6px;
+    padding: 0 8px;
+  }
+
+  .hud__wing {
+    padding-bottom: 8px;
+  }
+
+  .hud__control::before {
+    height: calc(var(--lamp) + 40px);
   }
 }
 
-/* ── Controls legend (desktop only, bottom-centre) ─────────────────────── */
-.hud__legend {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--s-4) + var(--safe-b));
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-1) var(--s-4);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--r-pill);
-  background: color-mix(in srgb, var(--bg) 55%, transparent);
-  color: var(--text-dim);
-  font-size: var(--fs-xs);
-  white-space: nowrap;
-  translate: -50% 0;
-}
+@media (max-width: 360px) {
+  .hud {
+    --gauge-w: 150px;
+    --lamp: 28px;
+    --ring: 54px;
+    --cluster-h: 84px;
+  }
 
-.hud__legend > span {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-1);
-}
+  .hud-score {
+    padding: 7px 12px 8px;
+  }
 
-.hud__legend-sep {
-  width: 1px;
-  height: 14px;
-  background: var(--line);
-}
+  .hud-score__value {
+    font-size: 1.375rem;
+  }
 
-@media (max-width: 960px), (pointer: coarse) {
-  .hud__legend {
+  .telltale {
+    padding: 1px 6px 2px;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+  }
+
+  .telltale svg {
     display: none;
+  }
+
+  .hud__control {
+    column-gap: 4px;
+    padding: 0 6px;
+  }
+}
+
+/* ── Reduced motion: no blinking, pulsing or popping; states stay lit ─── */
+@media (prefers-reduced-motion: reduce) {
+  .lamp[data-on],
+  .timering[data-low],
+  .hud-score__value {
+    animation: none;
+  }
+
+  .timering[data-low] {
+    box-shadow:
+      var(--hud-edge),
+      var(--shadow),
+      0 0 22px color-mix(in srgb, var(--red) 45%, transparent);
   }
 }

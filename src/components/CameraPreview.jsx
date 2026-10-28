@@ -10,7 +10,8 @@
  * ── BUSINESS RULES ──
  * - Hackathon brief §2 Camera Controls: the player steers with their body,
  *   so they need visual feedback of what the camera is reading.
- * - Line colours: green = neutral, amber = leaning, red = stop.
+ * - Line colours: cyan = neutral, amber = leaning, red = stop (the same
+ *   signal colours the HUD lamps and speedometer use).
  *
  * ── WHY IT'S BUILT THIS WAY (change at your peril) ──
  * - Video and skeleton are painted onto ONE canvas and the canvas is
@@ -58,7 +59,13 @@ const CHIP = {
 function readColors(el) {
   const cs = getComputedStyle(el)
   const v = (name) => cs.getPropertyValue(name).trim()
-  return { lean: v('--accent'), none: v('--green'), stop: v('--red'), joint: v('--text') }
+  // Fallbacks keep the overlay visible if a token is missing.
+  return {
+    lean: v('--amber') || '#ffc531',
+    none: v('--glow-cool') || '#5ee7ff',
+    stop: v('--red') || '#ff4d5e',
+    joint: v('--text') || '#f3f5fb',
+  }
 }
 
 function CameraIcon({ off }) {
@@ -156,6 +163,10 @@ export default function CameraPreview({ variant = 'large' }) {
       ctx.lineJoin = 'round'
       ctx.strokeStyle = colors[tone]
       ctx.lineWidth = unit * 2
+      // Soft neon glow on the bones only; reset before anything else is drawn
+      // so the next frame's video isn't blurred by a leftover shadow.
+      ctx.shadowColor = colors[tone]
+      ctx.shadowBlur = unit * 5
       ctx.beginPath()
       for (const [a, b] of BONES) {
         const p = pt(a)
@@ -165,6 +176,7 @@ export default function CameraPreview({ variant = 'large' }) {
         ctx.lineTo(q[0], q[1])
       }
       ctx.stroke()
+      ctx.shadowBlur = 0
 
       ctx.fillStyle = colors.joint
       for (const i of JOINTS) {
@@ -206,10 +218,14 @@ export default function CameraPreview({ variant = 'large' }) {
       aria-label={live ? `Camera preview, gesture: ${chip.label}` : `Camera preview: ${message || 'camera off'}`}
     >
       <canvas ref={canvasRef} className="cam-preview__canvas" aria-hidden="true" />
+      {/* Screen glass: a faint top reflection + vignette over the picture */}
+      <span className="cam-preview__glass" aria-hidden="true" />
 
       {!live && (
         <div className={`cam-preview__placeholder${errored ? ' is-error' : ''}`}>
-          <CameraIcon off={errored || status === 'idle'} />
+          <span className="cam-preview__badge">
+            <CameraIcon off={errored || status === 'idle'} />
+          </span>
           <p className="cam-preview__message">
             {status === 'loading' && <Spinner />}
             <span>{message || 'Camera is off'}</span>
@@ -218,6 +234,8 @@ export default function CameraPreview({ variant = 'large' }) {
       )}
 
       {live && showStepBack && !compact && <p className="cam-preview__banner">{message}</p>}
+
+      {live && compact && <span className="cam-preview__live" aria-hidden="true" />}
 
       {live && (
         <span className={`chip cam-preview__chip cam-preview__chip--${chipTone}`} aria-hidden="true">

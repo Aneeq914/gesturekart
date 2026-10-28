@@ -1,5 +1,6 @@
 /* Tooltip: CSS-positioned around the trigger. Tooltip.jsx only picks the
-   side (data-side) and an edge nudge (--tt-shift / --tt-arrow). */
+   side (data-side) and an edge nudge (--tt-shift / --tt-arrow).
+   Look: dark glass bubble, hairline cyan-tinted border, faint cyan glow. */
 .tt {
   position: relative;
   display: inline-flex;
@@ -24,16 +25,24 @@
 .tt__bubble {
   --tt-gap: 10px;
   --tt-nudge: 4px;
+  /* Dark glass: near-opaque so the arrow (a separate square) matches it. */
+  --tt-bg: color-mix(in srgb, var(--panel-solid) 94%, transparent);
+  --tt-border: color-mix(in srgb, var(--glow-cool) 18%, var(--line));
 
   position: absolute;
   z-index: 50;
   width: max-content;
   max-width: min(260px, calc(100vw - 32px));
   padding: var(--s-2) var(--s-3);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--panel-solid);
-  box-shadow: var(--shadow);
+  border: 1px solid var(--tt-border);
+  border-radius: var(--r-md);
+  background: var(--glass-sheen), var(--tt-bg);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow:
+    var(--edge-hi),
+    var(--shadow),
+    0 0 26px -10px color-mix(in srgb, var(--glow-cool) 55%, transparent);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--fs-sm);
@@ -68,7 +77,7 @@
   width: 9px;
   height: 9px;
   background: var(--panel-solid);
-  border: 0 solid var(--line);
+  border: 0 solid var(--tt-border);
   rotate: 45deg;
 }
 
@@ -104,6 +113,8 @@
 }
 
 .tt__bubble[data-side='bottom']::before {
+  /* This arrow meets the bubble's lit top edge, so match the sheen. */
+  background: color-mix(in srgb, var(--panel-solid), var(--text) 6%);
   bottom: calc(100% + 1px);
   left: 50%;
   translate: calc(-50% + var(--tt-arrow)) 50%;
