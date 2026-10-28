@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useGameStore } from '../store/gameStore.js'
 import { START_SCORE } from '../game/rules.js'
+import { startCamera, stopCamera } from '../gesture/gestureEngine.js'
 import CameraPreview from './CameraPreview.jsx'
 import Tooltip from './Tooltip.jsx'
 import Kbd from './Kbd.jsx'
@@ -10,10 +11,12 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CameraIcon,
+  CameraOffIcon,
   CheckIcon,
   CruiseIcon,
   HandIcon,
   KeyboardIcon,
+  SpinnerIcon,
 } from './icons.jsx'
 import './HUD.css'
 
@@ -144,6 +147,57 @@ function EventToast() {
   )
 }
 
+const CAMERA_ON = new Set(['ready', 'no-body'])
+
+// Space (and the legacy 'Spacebar' key name) is the brake key. A focused
+// <button> treats Space as "click" (on keyup in most browsers), so without
+// this guard braking could also flip the camera. preventDefault only cancels
+// the button's own activation: the event still bubbles to window, where
+// useControls reads it as a brake. Enter still toggles for keyboard users.
+const isSpace = (e) => e.key === ' ' || e.key === 'Spacebar'
+const swallowSpace = (e) => {
+  if (isSpace(e)) e.preventDefault()
+}
+
+/** Round button beside the HUD thumbnail: switch the webcam off or back on mid-round. */
+function CameraToggle() {
+  const status = useGameStore((s) => s.camera.status)
+  const loading = status === 'loading'
+  const on = CAMERA_ON.has(status)
+  const label = loading ? 'Starting camera' : on ? 'Turn camera off' : 'Turn camera on'
+  const tip = loading ? 'Starting camera… keyboard still works' : `${label} — keyboard still works`
+
+  const onClick = (e) => {
+    // Drop focus at once: a focused button would keep catching driving keys.
+    e.currentTarget.blur()
+    if (on) stopCamera()
+    else startCamera()
+  }
+
+  return (
+    <Tooltip side="top" content={tip}>
+      <button
+        type="button"
+        className="cam-toggle"
+        data-on={on || undefined}
+        aria-label={label}
+        disabled={loading}
+        onClick={onClick}
+        onKeyDown={swallowSpace}
+        onKeyUp={swallowSpace}
+      >
+        {loading ? (
+          <SpinnerIcon size={20} strokeWidth={2.4} />
+        ) : on ? (
+          <CameraIcon size={20} />
+        ) : (
+          <CameraOffIcon size={20} />
+        )}
+      </button>
+    </Tooltip>
+  )
+}
+
 export default function HUD() {
   return (
     <section className="hud" aria-label="Driving dashboard">
@@ -172,6 +226,7 @@ export default function HUD() {
       </div>
 
       <div className="hud__camera">
+        <CameraToggle />
         <CameraPreview variant="compact" />
       </div>
     </section>

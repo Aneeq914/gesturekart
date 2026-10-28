@@ -317,6 +317,65 @@
   position: absolute;
   right: calc(var(--gutter) + var(--safe-r));
   bottom: calc(var(--gutter) + var(--safe-b));
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-2);
+}
+
+/* Camera ON/OFF toggle: sits just left of the thumbnail, bottom-aligned, so
+   it never reaches toward the middle of the road. 44px (40px on phones)
+   keeps it an easy thumb target. */
+.cam-toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-pill);
+  background: var(--panel);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.cam-toggle[data-on] {
+  color: var(--text);
+}
+
+.cam-toggle:hover:not(:disabled) {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--text) 10%, var(--panel));
+  color: var(--text);
+}
+
+.cam-toggle:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.cam-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.cam-toggle:disabled {
+  cursor: progress;
+  color: var(--text-faint);
+}
+
+@media (max-width: 600px) {
+  .cam-toggle {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 /* ── Controls legend (desktop only, bottom-centre) ─────────────────────── */

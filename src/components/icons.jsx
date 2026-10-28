@@ -81,6 +81,15 @@ export const CameraIcon = (p) => (
   </Icon>
 )
 
+/** CameraIcon with a diagonal slash: "camera is off". */
+export const CameraOffIcon = (p) => (
+  <Icon {...p}>
+    <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H7l1.6-2h6.8L17 6h1.5A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z" />
+    <circle cx="12" cy="13" r="3.5" />
+    <path d="M3 3l18 18" />
+  </Icon>
+)
+
 export const KeyboardIcon = (p) => (
   <Icon {...p}>
     <rect x="2.5" y="6" width="19" height="12" rx="2.5" />

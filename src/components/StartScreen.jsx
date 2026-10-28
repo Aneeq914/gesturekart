@@ -1,6 +1,6 @@
 import { useGameStore } from '../store/gameStore.js'
 import { EVENT, EVENT_LABEL, GAME_DURATION, POINTS, START_SCORE } from '../game/rules.js'
-import { startCamera } from '../gesture/gestureEngine.js'
+import { startCamera, stopCamera } from '../gesture/gestureEngine.js'
 import CameraPreview from './CameraPreview.jsx'
 import Tooltip from './Tooltip.jsx'
 import Kbd from './Kbd.jsx'
@@ -8,7 +8,6 @@ import { formatPoints, toneOf } from './format.js'
 import {
   ArrowRightIcon,
   CameraIcon,
-  CheckIcon,
   InfoIcon,
   KeyboardFigure,
   LeanFigure,
@@ -38,17 +37,19 @@ const SCORING = [
   },
 ]
 
+// The camera button is an ON/OFF toggle: its label always names the action a
+// click will take, so "on" states read "Turn camera off".
 const CAMERA_BUTTON = {
-  idle: 'Enable camera',
+  idle: 'Turn camera on',
   loading: 'Starting camera…',
-  ready: 'Camera on',
-  'no-body': 'Camera on',
+  ready: 'Turn camera off',
+  'no-body': 'Turn camera off',
   denied: 'Try again',
   error: 'Try again',
 }
 
 const CAMERA_FALLBACK_MESSAGE = {
-  idle: 'Camera is off. You can still drive with the keyboard.',
+  idle: 'Camera is off. Turn it on to drive with gestures, or use the keyboard.',
   loading: 'Loading the camera and pose model…',
   ready: 'Camera ready. We can see you.',
   'no-body': 'Step back so your head and shoulders are in view.',
@@ -62,7 +63,14 @@ function CameraPanel() {
   const busy = status === 'loading'
   const on = status === 'ready' || status === 'no-body'
 
-  const enable = () => {
+  const toggle = () => {
+    // While the webcam runs (ready / no-body) a click switches it off. Off,
+    // denied and error all (re)try starting it. Loading is disabled below, so
+    // a double click can't stop a start that's still in flight.
+    if (on) {
+      stopCamera()
+      return
+    }
     // The engine reports progress and failures through camera.status, so a
     // rejection here only needs swallowing (no unhandled-rejection noise).
     try {
@@ -85,16 +93,28 @@ function CameraPanel() {
         <CameraPreview variant="large" />
       </div>
 
-      <button
-        type="button"
-        className="btn btn--ghost btn--block"
-        onClick={enable}
-        disabled={busy || on}
-        aria-busy={busy || undefined}
+      <Tooltip
+        className="tt--block"
+        content="Turn the webcam off any time — you can still drive with the keyboard."
       >
-        {busy ? <SpinnerIcon size={18} /> : on ? <CheckIcon size={18} /> : <CameraIcon size={18} />}
-        {CAMERA_BUTTON[status] ?? CAMERA_BUTTON.idle}
-      </button>
+        <button
+          type="button"
+          className="btn btn--ghost btn--block cam__toggle"
+          onClick={toggle}
+          disabled={busy}
+          data-on={on || undefined}
+          aria-busy={busy || undefined}
+        >
+          {busy ? (
+            <SpinnerIcon size={18} />
+          ) : on ? (
+            <span className="cam__live" aria-hidden="true" />
+          ) : (
+            <CameraIcon size={18} />
+          )}
+          {CAMERA_BUTTON[status] ?? CAMERA_BUTTON.idle}
+        </button>
+      </Tooltip>
 
       <p className="cam__status" data-status={status} role="status" aria-live="polite">
         <span className="cam__dot" aria-hidden="true" />

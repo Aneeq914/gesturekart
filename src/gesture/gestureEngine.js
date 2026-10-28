@@ -312,5 +312,7 @@ export function stopCamera() {
   latest = { landmarks: null, action: 'none' }
   missedFrames = 0
   store().setCameraStatus('idle', '')
-  writeInput('none')
+  // With the camera off the keyboard is the only control left, so the HUD
+  // must stop saying "Camera" as the input source.
+  if (!keyboardActive) store().setInput('none', 'keyboard')
 }
